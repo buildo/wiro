@@ -2,41 +2,50 @@ package wiro.server.akkaHttp
 
 import scala.concurrent.ExecutionContext
 
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
-import akka.stream.ActorMaterializer
-import akka.http.scaladsl.server.Route
 
 import upickle._ 
-import wiro.models.RpcRequest
+import akka.http.scaladsl.server.Route
+import de.heikoseeberger.akkahttpcirce.CirceSupport._
+import io.circe.generic.auto._
 
-trait Router {
-  def route: Route
-}
+import wiro.models.{ RpcRequest, WiroRequest }
 
-class RPCRouterImpl(
-  apiImpl: AutowireRPCServer,
-  rpcPath: String
-)(implicit
-  executionContext: ExecutionContext
-) extends Router {
-  import de.heikoseeberger.akkahttpcirce.CirceSupport._
-  import io.circe.generic.auto._
+import scala.reflect.runtime.{universe => ru}
 
-  override val route: Route = {
-    (post & path("rpc") & entity(as[RpcRequest])) { request =>
-      complete {
-        apiImpl.routes(
-          autowire.Core.Request(
-            request.path,
-            upickle.json
-              .read(request.args)
-              .asInstanceOf[Js.Obj]
-              .value.toMap
+package object routeGenerators {
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  //Don't necessarily need the type here, it can be simplified
+  trait RouteGenerator[T] extends RPCController {
+    def routes: autowire.Core.Router[upickle.Js.Value]
+    def tp: Seq[String]
+    def buildRoute: Route = {
+      (post & pathPrefix(path / Segment)) { method =>
+        entity(as[WiroRequest]) { request =>
+          val rpcRequest = RpcRequest(
+            path = tp :+ method,
+            args = request.args
           )
-        ).map(upickle.json.write(_))
+          complete {
+            routes(
+              autowire.Core.Request(
+                rpcRequest.path,
+                upickle.json
+                  .read(rpcRequest.args)
+                  .asInstanceOf[Js.Obj]
+                  .value.toMap
+              )
+            ).map(upickle.json.write(_))
+          }
+        }
       }
     }
   }
+
+  case class GeneratorBox[T: RouteGenerator](t: T) {
+    def routify = implicitly[RouteGenerator[T]].buildRoute
+  }
+
+  implicit def boxer[T: RouteGenerator](t: T) = new GeneratorBox(t)
 }

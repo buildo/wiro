@@ -8,24 +8,44 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 
+import wiro.server.akkaHttp.routeGenerators._
+
 object Server extends App {
   import ApiImpl._
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
 
-  val rpcServer = new RPCServer(
-    serverConfig = ServerConfig("localhost", 8080),
-    apiImpl = DoghouseApiImpl
+  import wiro.reflect._
+  implicit object CathouseRouter extends RouteGenerator[CathouseApiImpl.type] {
+    val routes = route[CathouseApi](CathouseApiImpl)
+    val tp = typePath[CathouseApi]
+    val path = "cathouse"
+  }
+
+  implicit object DoghouseRouter extends RouteGenerator[DoghouseApiImpl.type] {
+    val routes = route[DoghouseApi](DoghouseApiImpl)
+    val tp = typePath[DoghouseApi]
+    val path = "doghouse"
+  }
+
+  val rpcServer = new HttpRPCServer(
+    config = ServerConfig("localhost", 8080),
+    controllers = List(DoghouseApiImpl, CathouseApiImpl)
   )
 }
 
 object ApiImpl {
-  // server-side implementation, and router
-  object DoghouseApiImpl extends AutowireRPCServer with DoghouseApi {
-    def getPuppy(puppyName: String): Dog = Dog(name = puppyName)
-    def getDogsNumber: Int = 10
+  import wiro.annotation._
 
-    val routes = route[DoghouseApi](this)
+  // server-side implementation
+  object DoghouseApiImpl extends DoghouseApi {
+     @auth override def getPuppy(
+       puppyName: String
+    ) = println("ciao")
+  }
+
+  object CathouseApiImpl extends CathouseApi {
+    override def getKitten(kittenName: String): Kitten = Kitten(name = kittenName)
   }
 }

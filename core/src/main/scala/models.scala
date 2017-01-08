@@ -10,6 +10,10 @@ case class ServerConfig(
   port: Int
 )
 
+case class WiroRequest(
+  args: String
+)
+
 case class RpcRequest(
   path: Seq[String],
   args: String

@@ -5,32 +5,35 @@ import upickle._
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.server.Directives._
+import wiro.server.akkaHttp.routeGenerators._
 
 import scala.io.StdIn
 
-class RPCServer(
-  serverConfig: ServerConfig,
-  apiImpl: AutowireRPCServer,
-  path: String = "rpc"
+class HttpRPCServer(
+  config: ServerConfig,
+  controllers: List[GeneratorBox[_]]
 )(implicit
-  actorSystem: ActorSystem,
+  system: ActorSystem,
   materializer: ActorMaterializer
 ) {
-  import scala.concurrent.ExecutionContext.Implicits.global
+  import system.dispatcher
 
-  val route = new RPCRouterImpl(apiImpl, path).route
-  val bindingFuture = Http().bindAndHandle(route, serverConfig.host, serverConfig.port)
+  val routes = controllers map(_.routify) reduceLeft(_ ~ _)
+
+  val bindingFuture = Http().bindAndHandle(routes, config.host, config.port)
 
   println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
   StdIn.readLine() // let it run until user presses return
 
   bindingFuture
     .flatMap(_.unbind()) // trigger unbinding from the port
-    .onComplete(_ => actorSystem.terminate()) // and shutdown when done
+    .onComplete(_ => system.terminate()) // and shutdown when done
 }
 
-trait AutowireRPCServer extends autowire.Server[Js.Value, upickle.default.Reader, upickle.default.Writer] {
+trait RPCController extends autowire.Server[Js.Value, upickle.default.Reader, upickle.default.Writer] {
   def write[Result: upickle.default.Writer](r: Result) = {
     upickle.default.writeJs(r)
   }
@@ -40,4 +43,6 @@ trait AutowireRPCServer extends autowire.Server[Js.Value, upickle.default.Reader
   }
 
   def routes: Router
+  def tp: Seq[String]
+  def path: String
 }
