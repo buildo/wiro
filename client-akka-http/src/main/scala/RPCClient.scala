@@ -29,12 +29,14 @@ class WiroClient(
   private[this] implicit val m = materializer
   implicit val executionContext = s.dispatcher
 
+  case class ClientRpcRequest(path: Seq[String] , args: String)
+
   private[this] val url = s"http://${conf.host}:${conf.port}/${path}"
 
   override def doCall(req: Request): Future[Js.Value] = {
-    val rpcRequest = RpcRequest(
+    val rpcRequest = ClientRpcRequest(
       path = req.path,
-      args= default.write(req.args)
+      args= upickle.default.write(req.args)
     )
 
     for {

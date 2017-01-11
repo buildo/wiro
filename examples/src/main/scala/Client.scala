@@ -22,9 +22,9 @@ object Client extends App {
     materializer = materializer
   )[DoghouseApi]
 
-  val futureDog: Future[Dog] = doghouse.getPuppy("a").call() recover {
-    case e: Exception => e.printStackTrace; throw e
-  }
+  // val futureDog: Future[Dog] = doghouse.getPuppy("a").call() recover {
+  //   case e: Exception => e.printStackTrace; throw e
+  // }
 
-  futureDog map (println)
+  // futureDog map (println)
 }
