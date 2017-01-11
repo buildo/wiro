@@ -45,9 +45,9 @@ object routeGenerators {
   trait RouteGenerator[T] extends RPCController {
     def routes: autowire.Core.Router[Json]
     def tp: Seq[String]
-    def buildRoute: Route = rpcPost ~ rpcGet
+    def buildRoute: Route = commands ~ queries
 
-    private[this] def rpcGet: Route = {
+    private[this] def queries: Route = {
       (get & pathPrefix(path / Segment)) { method =>
         parameterMap { params =>
           val path = tp :+ method
@@ -72,7 +72,7 @@ object routeGenerators {
       }
     }
 
-    private[this] def rpcPost: Route = {
+    private[this] def commands: Route = {
       (post & pathPrefix(path / Segment)) { method =>
         entity(as[Json]) { request =>
           val rpcRequest = RpcRequest(

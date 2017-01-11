@@ -1,3 +1,5 @@
+tutSettings
+
 val autowire = "com.lihaoyi" %% "autowire" % "0.2.6"
 val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.1"
 val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.11.0"
@@ -37,10 +39,7 @@ lazy val serverAkkaHttp = (project in file("server-akka-http")).
   settings(commonSettings: _*).
   dependsOn(core)
 
-lazy val clientAkkaHttp = (project in file("client-akka-http")).
-  settings(commonSettings: _*).
-  dependsOn(core)
-
 lazy val examples = (project in file("examples")).
   settings(commonSettings: _*).
-  dependsOn(serverAkkaHttp, clientAkkaHttp)
+  dependsOn(serverAkkaHttp)
+

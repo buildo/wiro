@@ -1,41 +1,41 @@
 # Wiro!
 
-RPC/http library for scala
+Wiro is a library for generating HTTP routes from traits.
+
+## What's wrong with routers?
+
+After years spent writing routers we realized that routes were merely a one-to-one mapping with controllers' methods.
+
+## RPC?
+
+Wiro exposes operations to manipulate data using HTTP as a transport protocol.
+This is sometimes referred to as "WYGOPIAO": What You GET Or POST Is An Operation, and it's closly related to RPC.
 
 ## Example
 
-Define your API:
+trait and implementation:
 
 ```scala
 case class Dog(name: String)
 trait DoghouseApi {
-  def getPuppy(puppyName: String): Dog
+  def getPuppy(puppyName: String): Future[Dog]
+}
+
+object DoghouseApiImpl with DoghouseApi {
+  def getPuppy(puppyName: String) = Future(Dog(name = puppyName))
 }
 ```
 
-Server:
+Run server:
 
 ```scala
-val rpcServer = new RPCServer(
-  serverConfig = ServerConfig("localhost", 8080),
-  apiImpl = DoghouseApiImpl
+implicit object DoghouseRouter extends RouteGenerator[DoghouseApiImpl.type] {
+  val routes = route[DoghouseApi](DoghouseApiImpl)
+  val tp = typePath[DoghouseApi]
+}
+
+val rpcServer = new HttpRPCServer(
+  config = ServerConfig("localhost", 8080),
+  controllers = Seq(DoghouseApiImpl)
 )
-
-object DoghouseApiImpl extends AutowireRPCServer with DoghouseApi {
-  def getPuppy(puppyName: String): Dog = Dog(name = puppyName)
-
-  val routes = route[DoghouseApi](this)
-}
-```
-
-Client:
-
-```scala
-val doghouse = new WiroClient(
-  conf = ClientConfig("localhost", 8080),
-  actorSystem = actorSystem,
-  materializer = materializer
-)[DoghouseApi]
-
-val futureDog: Future[Dog] = doghouse.getPuppy("a").call()
 ```
