@@ -16,27 +16,27 @@ This is sometimes referred to as "WYGOPIAO": What You GET Or POST Is An Operatio
 Trait and implementation:
 
 ```scala
-case class Dog(name: String)
-trait DoghouseApi {
-  def getPuppy(puppyName: String): Future[Dog]
+case class Kitten(name: String)
+trait CathouseApi {
+  def getKitten(name: String): Future[Kitten]
 }
 
-object DoghouseApiImpl with DoghouseApi {
-  def getPuppy(puppyName: String) = Future(Dog(name = puppyName))
+object CathouseApiImpl with CathouseApi {
+  def getKitten(name: String) = Future(Kitten(name = name))
 }
 ```
 
 Run server:
 
 ```scala
-implicit object DoghouseRouter extends RouteGenerator[DoghouseApiImpl.type] {
-  val routes = route[DoghouseApi](DoghouseApiImpl)
-  val tp = typePath[DoghouseApi]
+implicit object CathouseRouter extends RouteGenerator[CathouseApiImpl.type] {
+  val routes = route[CathouseApi](CathouseApiImpl)
+  val tp = typePath[CathouseApi]
 }
 
 val rpcServer = new HttpRPCServer(
   config = ServerConfig("localhost", 8080),
-  controllers = Seq(DoghouseApiImpl)
+  controllers = Seq(CoghouseApiImpl)
 )
 ```
 
