@@ -16,5 +16,5 @@ case class WiroRequest(
 
 case class RpcRequest(
   path: Seq[String],
-  args: Map[String, upickle.Js.Value]
+  args: Map[String, io.circe.Json]
 )

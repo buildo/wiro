@@ -2,16 +2,19 @@ package wiro.server.akkaHttp
 
 import akka.http.scaladsl.server.Directives._
 
-import upickle._ 
 import akka.http.scaladsl.model.headers.HttpChallenges
 import akka.http.scaladsl.server.{ Route, Directive1, AuthenticationFailedRejection, StandardRoute }
 import akka.http.scaladsl.server.AuthenticationFailedRejection.CredentialsRejected
 import de.heikoseeberger.akkahttpcirce.CirceSupport._
 import io.circe.generic.auto._
+import io.circe.Json
 
 import wiro.models.{ RpcRequest, WiroRequest }
 
 import scala.language.implicitConversions
+
+import scala.util.Try
+import scala.concurrent.Future
 
 object routeGenerators {
   import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
@@ -36,17 +39,15 @@ object routeGenerators {
 
   //TODO Don't necessarily need the type here, it can be simplified (no boxing)
   trait RouteGenerator[T] extends RPCController {
-    def routes: autowire.Core.Router[upickle.Js.Value]
+    def routes: autowire.Core.Router[Json]
     def tp: Seq[String]
     def buildRoute: Route = {
       (post & pathPrefix(path / Segment)) { method =>
-        entity(as[WiroRequest]) { request =>
+        entity(as[Json]) { request =>
           val rpcRequest = RpcRequest(
             path = tp :+ method,
-            args = upickle.json
-              .read(request.args)
-              .asInstanceOf[Js.Obj]
-              .value.toMap
+            //TODO handle circe error
+            args = request.as[Map[String, Json]].right.get
           )
 
           withToken { token =>
@@ -56,7 +57,7 @@ object routeGenerators {
               autowire.Core.Request(
                 rpcRequestWithToken.path,
                 rpcRequestWithToken.args
-              )).map(upickle.json.write(_))
+              ))
             )
 
             handleUnwrapErrors(tryUnwrapRequest)
@@ -65,9 +66,10 @@ object routeGenerators {
       }
     }
 
-    private[this] def handleUnwrapErrors(tryUnwrapRequest: scala.util.Try[scala.concurrent.Future[String]]) = {
+    private[this] def handleUnwrapErrors(tryUnwrapRequest: Try[Future[Json]]): StandardRoute = {
       tryUnwrapRequest match {
-        case scala.util.Success(res) => complete(res)
+        case scala.util.Success(res) =>
+          complete(res)
         case scala.util.Failure(f) => f match {
           case autowire.Error.InvalidInput(xs) =>
             handleAutowireInputErrors(xs)
@@ -107,9 +109,9 @@ object routeGenerators {
     }
   }
 
-  private[this] def addTokenToRpcRequest(rpcRequest: wiro.models.RpcRequest, token: Option[String]): wiro.models.RpcRequest = {
+  private[this] def addTokenToRpcRequest(rpcRequest: wiro.models.RpcRequest, token: Option[String]): RpcRequest = {
     val rpcRequestWithToken = token match {
-      case Some(t) => rpcRequest.copy(args = rpcRequest.args + ("token" -> Js.Str(t)))
+      case Some(t) => rpcRequest.copy(args = rpcRequest.args + ("token" -> Json.fromString(t)))
       case None => rpcRequest
     }
 

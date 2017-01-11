@@ -1,8 +1,10 @@
 package wiro.apps
 
+import scala.concurrent.Future
+
 object interface {
   trait DoghouseApi {
-    def getPuppy(token: String, puppyName: String): Dog
+    def getPuppy(token: String, puppyName: String): Future[Dog]
   }
 
   case class Dog(
@@ -10,7 +12,7 @@ object interface {
   )
 
   trait CathouseApi {
-    def getKitten(kittenName: String): Kitten
+    def getKitten(kittenName: String): Future[Kitten]
   }
 
   case class Kitten(

@@ -1,5 +1,6 @@
 package wiro.apps
 
+import scala.concurrent.Future
 import wiro.server.akkaHttp._
 import wiro.models.ServerConfig
 
@@ -11,13 +12,14 @@ import akka.stream.ActorMaterializer
 import wiro.server.akkaHttp.routeGenerators._
 
 object Server extends App {
+  import wiro.reflect._
   import interface._
   import ApiImpl._
+  import io.circe.generic.auto._
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
 
-  import wiro.reflect._
   implicit object CathouseRouter extends RouteGenerator[CathouseApiImpl.type] {
     val routes = route[CathouseApi](CathouseApiImpl)
     val tp = typePath[CathouseApi]
@@ -37,18 +39,19 @@ object Server extends App {
 }
 
 object ApiImpl {
-  import wiro.annotation._
   import interface._
 
   // server-side implementation
   object DoghouseApiImpl extends DoghouseApi {
-    @auth
     def getPuppy(
-       puppyName: String
-    ) = Dog(puppyName)
+      token: String, 
+      puppyName: String
+    ) = Future(Dog(puppyName))
   }
 
   object CathouseApiImpl extends CathouseApi {
-    override def getKitten(kittenName: String): Kitten = Kitten(name = kittenName)
+    override def getKitten(
+      kittenName: String
+    ) = Future(Kitten(kittenName))
   }
 }

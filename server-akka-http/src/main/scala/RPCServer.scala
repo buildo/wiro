@@ -1,8 +1,6 @@
 package wiro.server.akkaHttp
 import wiro.models.ServerConfig
 
-import upickle._ 
-
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.Http
@@ -10,6 +8,9 @@ import akka.http.scaladsl.server.Directives._
 import wiro.server.akkaHttp.routeGenerators._
 
 import scala.io.StdIn
+
+import io.circe._
+import io.circe.syntax._
 
 class HttpRPCServer(
   config: ServerConfig,
@@ -32,14 +33,10 @@ class HttpRPCServer(
     .onComplete(_ => system.terminate()) // and shutdown when done
 }
 
-trait RPCController extends autowire.Server[Js.Value, upickle.default.Reader, upickle.default.Writer] {
-  def write[Result: upickle.default.Writer](r: Result) = {
-    upickle.default.writeJs(r)
-  }
-
-  def read[Result: upickle.default.Reader](p: Js.Value) = {
-    upickle.default.readJs[Result](p)
-  }
+trait RPCController extends autowire.Server[Json, Decoder, Encoder] {
+  def write[Result: Encoder](r: Result): Json = r.asJson
+  //TODO handle circe error here
+  def read[Result: Decoder](p: Json): Result = p.as[Result].right.get
 
   def routes: Router
   def tp: Seq[String]
