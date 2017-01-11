@@ -23,13 +23,11 @@ object Server extends App {
   implicit object CathouseRouter extends RouteGenerator[CathouseApiImpl.type] {
     val routes = route[CathouseApi](CathouseApiImpl)
     val tp = typePath[CathouseApi]
-    val path = "cathouse"
   }
 
   implicit object DoghouseRouter extends RouteGenerator[DoghouseApiImpl.type] {
     val routes = route[DoghouseApi](DoghouseApiImpl)
     val tp = typePath[DoghouseApi]
-    val path = "doghouse"
   }
 
   val rpcServer = new HttpRPCServer(

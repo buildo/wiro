@@ -40,5 +40,5 @@ trait RPCController extends autowire.Server[Json, Decoder, Encoder] {
 
   def routes: Router
   def tp: Seq[String]
-  def path: String
+  def path: String = tp.last
 }
