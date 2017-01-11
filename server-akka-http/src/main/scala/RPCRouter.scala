@@ -108,7 +108,9 @@ object routeGenerators {
       }
     }
 
-  private[this] def handleUnwrapErrors(f: Throwable) = f match {
+  private[this] def handleUnwrapErrors(
+    throwable: Throwable
+  ) = throwable match {
     case autowire.Error.InvalidInput(xs) =>
       handleAutowireInputErrors(xs)
     case _: scala.MatchError =>
