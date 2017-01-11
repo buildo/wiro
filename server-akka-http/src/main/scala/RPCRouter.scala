@@ -18,10 +18,6 @@ import scala.concurrent.Future
 
 object routeGenerators {
   import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  import io.circe.syntax._
-  import io.circe.jawn.decode
 
   case class GeneratorBox[T: RouteGenerator](t: T) {
     def routify = implicitly[RouteGenerator[T]].buildRoute
@@ -108,24 +104,24 @@ object routeGenerators {
       }
     }
 
-  private[this] def handleUnwrapErrors(
-    throwable: Throwable
-  ) = throwable match {
-    case autowire.Error.InvalidInput(xs) =>
-      handleAutowireInputErrors(xs)
-    case _: scala.MatchError =>
-      complete(HttpResponse(
-        status = StatusCodes.MethodNotAllowed,
-        entity = "Method not found"
-      ))
-    case e: Exception =>
-      //TODO find nicer way for this
-      e.printStackTrace
-      complete(HttpResponse(
-        status = StatusCodes.InternalServerError,
-        entity = "Internal Error"
-      ))
-    }
+    private[this] def handleUnwrapErrors(
+      throwable: Throwable
+    ) = throwable match {
+      case autowire.Error.InvalidInput(xs) =>
+        handleAutowireInputErrors(xs)
+      case _: scala.MatchError =>
+        complete(HttpResponse(
+          status = StatusCodes.MethodNotAllowed,
+          entity = "Method not found"
+        ))
+      case e: Exception =>
+        //TODO find nicer way for this
+        e.printStackTrace
+        complete(HttpResponse(
+          status = StatusCodes.InternalServerError,
+          entity = "Internal Error"
+        ))
+      }
   }
 
   private[this] def handleAutowireInputErrors(
