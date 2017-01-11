@@ -51,5 +51,9 @@ object ApiImpl {
     override def getKitten(
       kittenName: String
     ) = Future(Kitten(kittenName))
+
+    override def getKittens(
+      number: Int
+    ) = Future(List.fill(number)(Kitten("gattino")))
   }
 }

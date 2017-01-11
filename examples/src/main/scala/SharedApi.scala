@@ -13,6 +13,7 @@ object interface {
 
   trait CathouseApi {
     def getKitten(kittenName: String): Future[Kitten]
+    def getKittens(number: Int): Future[List[Kitten]]
   }
 
   case class Kitten(
