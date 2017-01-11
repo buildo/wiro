@@ -5,15 +5,23 @@ import akka.http.scaladsl.server.Directives._
 import upickle._ 
 import akka.http.scaladsl.model.headers.HttpChallenges
 import akka.http.scaladsl.server.{ Route, Directive1, AuthenticationFailedRejection, StandardRoute }
-import akka.http.scaladsl.server.AuthenticationFailedRejection.{ CredentialsMissing, CredentialsRejected }
+import akka.http.scaladsl.server.AuthenticationFailedRejection.CredentialsRejected
 import de.heikoseeberger.akkahttpcirce.CirceSupport._
 import io.circe.generic.auto._
 
 import wiro.models.{ RpcRequest, WiroRequest }
 
-package object routeGenerators {
+import scala.language.implicitConversions
+
+object routeGenerators {
   import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
   import scala.concurrent.ExecutionContext.Implicits.global
+
+  case class GeneratorBox[T: RouteGenerator](t: T) {
+    def routify = implicitly[RouteGenerator[T]].buildRoute
+  }
+
+  implicit def boxer[T: RouteGenerator](t: T) = new GeneratorBox(t)
 
   private[this] def withToken: Directive1[Option[String]] = {
     val authDirective: Directive1[Option[String]] = headerValueByName("Authorization").flatMap { header =>
@@ -26,7 +34,7 @@ package object routeGenerators {
     authDirective.recover { x => provide(None) }
   }
 
-  //Don't necessarily need the type here, it can be simplified
+  //TODO Don't necessarily need the type here, it can be simplified (no boxing)
   trait RouteGenerator[T] extends RPCController {
     def routes: autowire.Core.Router[upickle.Js.Value]
     def tp: Seq[String]
@@ -58,42 +66,53 @@ package object routeGenerators {
     }
 
     private[this] def handleUnwrapErrors(tryUnwrapRequest: scala.util.Try[scala.concurrent.Future[String]]) = {
-      lazy val challenge = HttpChallenges.basic("api")
-
       tryUnwrapRequest match {
         case scala.util.Success(res) => complete(res)
         case scala.util.Failure(f) => f match {
           case autowire.Error.InvalidInput(xs) =>
-            xs match {
-              case autowire.Error.Param.Missing(param) =>
-                complete(HttpResponse(StatusCodes.UnprocessableEntity, entity = s"Missing parameter $param from input"))
-              case autowire.Error.Param.Invalid(param, ex) =>
-                if (param == "token") reject(AuthenticationFailedRejection(CredentialsRejected, challenge))
-                else complete(HttpResponse(StatusCodes.UnprocessableEntity, entity = s"Missing parameter $param from input"))
-            }
+            handleAutowireInputErrors(xs)
           case _: scala.MatchError =>
-            complete(HttpResponse(StatusCodes.NotFound, entity = "Method not found"))
+            complete(HttpResponse(
+              status = StatusCodes.MethodNotAllowed,
+              entity = "Method not found"
+            ))
           case e: Exception =>
             //TODO find nicer way for this
             e.printStackTrace
-            complete(HttpResponse(StatusCodes.InternalServerError, entity = "Internal Error"))
+            complete(HttpResponse(
+              status = StatusCodes.InternalServerError,
+              entity = "Internal Error"
+            ))
         }
       }
     }
+  }
 
-    private[this] def addTokenToRpcRequest(rpcRequest: wiro.models.RpcRequest, token: Option[String]): wiro.models.RpcRequest = {
-      val rpcRequestWithToken = token match {
-        case Some(t) => rpcRequest.copy(args = rpcRequest.args + ("token" -> Js.Str(t)))
-        case None => rpcRequest
-      }
-
-      rpcRequestWithToken
+  private[this] def handleAutowireInputErrors(xs: autowire.Error.Param): StandardRoute = {
+    xs match {
+      case autowire.Error.Param.Missing(param) =>
+        complete(HttpResponse(
+          status = StatusCodes.UnprocessableEntity,
+          entity = s"Missing parameter $param from input"
+        ))
+      case autowire.Error.Param.Invalid(param, ex) =>
+        if (param == "token") reject(AuthenticationFailedRejection(
+          cause = CredentialsRejected,
+          challenge = HttpChallenges.basic("api")
+        ))
+        else complete(HttpResponse(
+          status = StatusCodes.UnprocessableEntity,
+          entity = s"Missing parameter $param from input"
+        ))
     }
   }
 
-  case class GeneratorBox[T: RouteGenerator](t: T) {
-    def routify = implicitly[RouteGenerator[T]].buildRoute
-  }
+  private[this] def addTokenToRpcRequest(rpcRequest: wiro.models.RpcRequest, token: Option[String]): wiro.models.RpcRequest = {
+    val rpcRequestWithToken = token match {
+      case Some(t) => rpcRequest.copy(args = rpcRequest.args + ("token" -> Js.Str(t)))
+      case None => rpcRequest
+    }
 
-  implicit def boxer[T: RouteGenerator](t: T) = new GeneratorBox(t)
+    rpcRequestWithToken
+  }
 }

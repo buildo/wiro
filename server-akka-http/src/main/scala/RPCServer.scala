@@ -5,7 +5,6 @@ import upickle._
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import wiro.server.akkaHttp.routeGenerators._

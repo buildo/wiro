@@ -1,10 +1,8 @@
-package wiro
+package wiro.apps
 
-package object apps {
-  import wiro.annotation._
-
+object interface {
   trait DoghouseApi {
-    def getPuppy(token: String, puppyName: String)
+    def getPuppy(token: String, puppyName: String): Dog
   }
 
   case class Dog(

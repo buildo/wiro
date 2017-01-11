@@ -11,6 +11,7 @@ import akka.stream.ActorMaterializer
 import wiro.server.akkaHttp.routeGenerators._
 
 object Server extends App {
+  import interface._
   import ApiImpl._
 
   implicit val system = ActorSystem()
@@ -37,13 +38,14 @@ object Server extends App {
 
 object ApiImpl {
   import wiro.annotation._
+  import interface._
 
   // server-side implementation
   object DoghouseApiImpl extends DoghouseApi {
     @auth
     def getPuppy(
        puppyName: String
-    ) = println("ciao")
+    ) = Dog(puppyName)
   }
 
   object CathouseApiImpl extends CathouseApi {
