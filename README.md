@@ -13,7 +13,7 @@ This is sometimes referred to as "WYGOPIAO": What You GET Or POST Is An Operatio
 
 ## Example
 
-trait and implementation:
+Trait and implementation:
 
 ```scala
 case class Dog(name: String)
@@ -39,3 +39,5 @@ val rpcServer = new HttpRPCServer(
   controllers = Seq(DoghouseApiImpl)
 )
 ```
+
+Have a look at `examples/src/main/scala` for a working example.
