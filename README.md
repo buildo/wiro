@@ -9,7 +9,8 @@ After years spent writing routers we realized that routes were merely a one-to-o
 ## RPC?
 
 Wiro exposes operations to manipulate data using HTTP as a transport protocol.
-This is sometimes referred to as "WYGOPIAO": What You GET Or POST Is An Operation, and it's closly related to RPC.
+
+This is sometimes referred to as *WYGOPIAO*: What You GET Or POST Is An Operation, and it's closly related to RPC.
 
 ## Example
 
