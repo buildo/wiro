@@ -4,7 +4,7 @@ package object apps {
   import wiro.annotation._
 
   trait DoghouseApi {
-    @auth def getPuppy(puppyName: String)
+    def getPuppy(token: String, puppyName: String)
   }
 
   case class Dog(

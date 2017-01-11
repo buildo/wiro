@@ -40,7 +40,8 @@ object ApiImpl {
 
   // server-side implementation
   object DoghouseApiImpl extends DoghouseApi {
-     @auth override def getPuppy(
+    @auth
+    def getPuppy(
        puppyName: String
     ) = println("ciao")
   }
