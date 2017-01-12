@@ -9,12 +9,14 @@ import de.heikoseeberger.akkahttpcirce.CirceSupport._
 import io.circe.generic.auto._
 import io.circe.Json
 
-import wiro.models.{ RpcRequest, WiroRequest }
+import wiro.models.{ RpcRequest, WiroRequest, Command, Query }
 
 import scala.language.implicitConversions
 
 import scala.util.Try
 import scala.concurrent.Future
+
+import ingredients.caseenum.CaseEnumSerialization
 
 object routeGenerators {
   import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
@@ -54,15 +56,15 @@ object routeGenerators {
           withToken { token =>
             val tryUnwrapRequest = scala.util.Try(routes(
               autowire.Core.Request(
-                tp :+ operation,
-                addTokenToParams(
+                path = tp :+ operation,
+                args = addQueryToParams(addTokenToParams(
                   //`Map[String, String]` is feeding autowire macro
                   //That's how it works even with types other than `String`
                   params.map { case (k, v) =>
                     (k -> Json.fromString(v))
                   },
                   token
-                )
+                ))
               ))
             )
 
@@ -85,13 +87,13 @@ object routeGenerators {
 
           withToken { token =>
             val rpcRequestWithToken = rpcRequest.copy(
-              args = addTokenToParams(rpcRequest.args, token)
+              args = addCommandToParams(addTokenToParams(rpcRequest.args, token))
             )
 
             val tryUnwrapRequest = scala.util.Try(routes(
               autowire.Core.Request(
-                rpcRequestWithToken.path,
-                rpcRequestWithToken.args
+                path = rpcRequestWithToken.path,
+                args = rpcRequestWithToken.args
               ))
             )
 
@@ -156,4 +158,12 @@ object routeGenerators {
     case Some(t) => params + ("token" -> Json.fromString(t))
     case None => params
   }
+
+  private[this] def addCommandToParams(
+    params: Map[String, Json]
+  ): Map[String, Json] = params + ("action" -> Json.fromString("CommandSingleton"))
+
+  private[this] def addQueryToParams(
+    params: Map[String, Json]
+  ): Map[String, Json] = params + ("action" -> Json.fromString("QuerySingleton"))
 }

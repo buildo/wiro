@@ -1,20 +1,29 @@
-package wiro.models
+package wiro
 
-case class ClientConfig(
-  host: String,
-  port: Int
-)
+package object models {
 
-case class ServerConfig(
-  host: String,
-  port: Int
-)
+  case class ClientConfig(
+    host: String,
+    port: Int
+  )
 
-case class WiroRequest(
-  args: String
-)
+  case class ServerConfig(
+    host: String,
+    port: Int
+  )
 
-case class RpcRequest(
-  path: Seq[String],
-  args: Map[String, io.circe.Json]
-)
+  case class WiroRequest(
+    args: String
+  )
+
+  case class RpcRequest(
+    path: Seq[String],
+    args: Map[String, io.circe.Json]
+  )
+
+  object CommandSingleton
+  object QuerySingleton
+
+  type Command = CommandSingleton.type
+  type Query = QuerySingleton.type
+}
