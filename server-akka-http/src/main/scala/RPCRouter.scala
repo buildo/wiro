@@ -19,6 +19,7 @@ import scala.concurrent.Future
 object routeGenerators {
   import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 
+  //Pattern to use existentially quantified types in scala
   case class GeneratorBox[T: RouteGenerator](t: T) {
     def routify = implicitly[RouteGenerator[T]].buildRoute
   }
@@ -40,19 +41,23 @@ object routeGenerators {
   //TODO Don't necessarily need the type here, it can be simplified (no boxing)
   trait RouteGenerator[T] extends RPCController {
     def routes: autowire.Core.Router[Json]
+    //complete path of the trait implementation, required by autowire to locate the method
     def tp: Seq[String]
     def buildRoute: Route = commands ~ queries
 
+    //Generates GET requests
     private[this] def queries: Route = {
-      (get & pathPrefix(path / Segment)) { method =>
+      //Any operation can by specified by the user here
+      //Autowire `routes` macro takes care of checking the operation is allowed
+      (get & pathPrefix(path / Segment)) { operation =>
         parameterMap { params =>
-          val path = tp :+ method
-
           withToken { token =>
             val tryUnwrapRequest = scala.util.Try(routes(
               autowire.Core.Request(
-                path,
+                tp :+ operation,
                 addTokenToParams(
+                  //`Map[String, String]` is feeding autowire macro
+                  //That's how it works even with types other than `String`
                   params.map { case (k, v) =>
                     (k -> Json.fromString(v))
                   },
@@ -68,6 +73,7 @@ object routeGenerators {
       }
     }
 
+    //Generates POST requests
     private[this] def commands: Route = {
       (post & pathPrefix(path / Segment)) { method =>
         entity(as[Json]) { request =>
