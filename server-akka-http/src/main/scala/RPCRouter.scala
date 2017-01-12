@@ -16,8 +16,6 @@ import scala.language.implicitConversions
 import scala.util.Try
 import scala.concurrent.Future
 
-import ingredients.caseenum.CaseEnumSerialization
-
 object routeGenerators {
   import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 
