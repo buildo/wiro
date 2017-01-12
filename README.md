@@ -2,6 +2,8 @@
 
 Wiro is a library for generating HTTP routes from traits.
 
+**DISCLAIMER: This is currently a POC**
+
 ## What's wrong with routers?
 
 After years spent writing routers we realized that routes were merely a one-to-one mapping with controllers' methods.
@@ -42,3 +44,11 @@ val rpcServer = new HttpRPCServer(
 ```
 
 Have a look at `examples/src/main/scala` for a working example.
+
+## Missing Features
+
+- annotation syntax for providing authentication and specifying request type (`@auth def controllerMethod`, `@command def controllerMethod`)
+- currently both Get and Post are generated for each method (see branch commandsAndQueries for an attempt)
+- Improved user handling. We are currently just returning the token
+
+
