@@ -1,5 +1,3 @@
-tutSettings
-
 val autowire = "com.lihaoyi" %% "autowire" % "0.2.6"
 val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.1"
 val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.11.0"
