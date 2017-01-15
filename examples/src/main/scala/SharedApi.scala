@@ -2,9 +2,11 @@ package wiro.apps
 
 import scala.concurrent.Future
 
+import wiro.models.Command
+
 object interface {
   trait DoghouseApi {
-    def getPuppy(token: String, puppyName: String): Future[Dog]
+    def getPuppy(action: Command, token: String, puppyName: String): Future[Dog]
   }
 
   case class Dog(

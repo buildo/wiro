@@ -2,7 +2,7 @@ package wiro.apps
 
 import scala.concurrent.Future
 import wiro.server.akkaHttp._
-import wiro.models.ServerConfig
+import wiro.models.{ ServerConfig, Command }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -42,6 +42,7 @@ object ApiImpl {
   // server-side implementation
   object DoghouseApiImpl extends DoghouseApi {
     def getPuppy(
+      action: Command,
       token: String, 
       puppyName: String
     ) = Future(Dog(puppyName))

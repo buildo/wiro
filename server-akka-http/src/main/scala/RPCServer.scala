@@ -12,6 +12,8 @@ import scala.io.StdIn
 import io.circe._
 import io.circe.syntax._
 
+import wiro.models.Codecs
+
 class HttpRPCServer(
   config: ServerConfig,
   controllers: List[GeneratorBox[_]]
@@ -33,7 +35,7 @@ class HttpRPCServer(
     .onComplete(_ => system.terminate()) // and shutdown when done
 }
 
-trait RPCController extends autowire.Server[Json, Decoder, Encoder] {
+trait RPCController extends autowire.Server[Json, Decoder, Encoder] with Codecs {
   def write[Result: Encoder](r: Result): Json = r.asJson
   //TODO handle circe error here
   def read[Result: Decoder](p: Json): Result = p.as[Result].right.get
