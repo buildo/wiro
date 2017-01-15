@@ -5,7 +5,6 @@ val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.1"
 val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.11.0"
 
 val scalaReflect = "org.scala-lang" % "scala-reflect" % "2.11.8"
-val scalaMeta = "org.scalameta" %% "scalameta" % "1.4.0"
 
 val circeVersion = "0.6.1"
 
@@ -20,7 +19,6 @@ val commonDependencies = Seq(
   akkaHttp,
   akkaHttpCirce,
   scalaReflect,
-  scalaMeta
 ) ++ circeDependencies
 
 lazy val commonSettings = Seq(

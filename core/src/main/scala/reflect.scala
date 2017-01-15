@@ -10,30 +10,77 @@ package object reflect {
 }
 
 package object annotation {
+  import scala.reflect.macros.Context
+  import scala.language.experimental.macros
+  import scala.annotation.StaticAnnotation
   import scala.annotation.compileTimeOnly
-  import scala.meta._
 
-  class auth extends scala.annotation.StaticAnnotation {
+  class auth extends StaticAnnotation {
+    def macroTransform(annottees: Any*): Any = macro authMacro.impl
+  }
 
-  inline def apply(d: Any): Any = meta {
-    def userParam = Term.Param(
-      mods = Nil,
-      name = Term.Name("token"),
-      decltpe = Some(Type.Name("String")),
-      default = None
-    )
+  class command extends StaticAnnotation {
+    def macroTransform(annottees: Any*): Any = macro commandMacro.impl
+  }
 
-    d match {
-      case defn: Defn.Def =>
-        val paramss = defn.paramss.map(userParam +: _)
-        defn.copy(paramss = paramss)
-      case q"def $name(...$params): $tpe" =>
-        val declParams = params.map(userParam +: _)
-        q"def $name(...$declParams): $tpe"
-      case a =>
-        println(a)
-        abort("@auth must annotate a def")
+  class query extends StaticAnnotation {
+    def macroTransform(annottees: Any*): Any = macro commandMacro.impl
+  }
+
+  object authMacro {
+    def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
+      import c.universe._
+      val result = annottees.map(_.tree).toList match {
+        case q"$annots def $methodName(...$args): $tpe = $body" :: nil =>
+          val allArgs = args.map{
+            case innerArgs => q"val token: String" +: innerArgs
+          }
+          q"$annots def $methodName(...$allArgs): $tpe = $body"
+        case q"$annots def $methodName(...$args): $tpe" :: nil =>
+          val allArgs = args.map{
+            case innerArgs => q"val token: String" +: innerArgs
+          }
+          q"$annots def $methodName(...$allArgs): $tpe"
+      }
+      c.Expr[Any](result)
     }
   }
-}
+
+  object commandMacro {
+    def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
+      import c.universe._
+      val result = annottees.map(_.tree).toList match {
+        case q"$annots def $methodName(...$args): $tpe = $body" :: nil =>
+          val allArgs = args.map{
+            case innerArgs => q"val action: Command" +: innerArgs
+          }
+          q"$annots def $methodName(...$allArgs): $tpe = $body"
+        case q"$annots def $methodName(...$args): $tpe" :: nil =>
+          val allArgs = args.map{
+            case innerArgs => q"val action: Command" +: innerArgs
+          }
+          q"$annots def $methodName(...$allArgs): $tpe"
+      }
+      c.Expr[Any](result)
+    }
+  }
+
+  object queryMacro {
+    def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
+      import c.universe._
+      val result = annottees.map(_.tree).toList match {
+        case q"$annots def $methodName(...$args): $tpe = $body" :: nil =>
+          val allArgs = args.map{
+            case innerArgs => q"val action: Query" +: innerArgs
+          }
+          q"$annots def $methodName(...$allArgs): $tpe = $body"
+        case q"$annots def $methodName(...$args): $tpe" :: nil =>
+          val allArgs = args.map{
+            case innerArgs => q"val action: Query" +: innerArgs
+          }
+          q"$annots def $methodName(...$allArgs): $tpe"
+      }
+      c.Expr[Any](result)
+    }
+  }
 }

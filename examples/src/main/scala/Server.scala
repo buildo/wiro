@@ -38,12 +38,13 @@ object Server extends App {
 
 object ApiImpl {
   import interface._
+  import wiro.annotation._
 
   // server-side implementation
   object DoghouseApiImpl extends DoghouseApi {
+    @auth
+    @command
     def getPuppy(
-      action: Command,
-      token: String, 
       puppyName: String
     ) = Future(Dog(puppyName))
   }

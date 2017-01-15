@@ -3,10 +3,13 @@ package wiro.apps
 import scala.concurrent.Future
 
 import wiro.models.Command
+import wiro.annotation._
 
 object interface {
   trait DoghouseApi {
-    def getPuppy(action: Command, token: String, puppyName: String): Future[Dog]
+    @auth
+    @command
+    def getPuppy(puppyName: String): Future[Dog]
   }
 
   case class Dog(
