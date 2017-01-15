@@ -6,17 +6,20 @@ import akka.http.scaladsl.model.headers.HttpChallenges
 import akka.http.scaladsl.server.{ Route, Directive1, AuthenticationFailedRejection, StandardRoute }
 import akka.http.scaladsl.server.AuthenticationFailedRejection.CredentialsRejected
 import de.heikoseeberger.akkahttpcirce.CirceSupport._
-import io.circe.generic.auto._
-import io.circe.Json
 
 import wiro.models.{ RpcRequest, WiroRequest, Command, Query }
+
+import wiro.models.Codecs
 
 import scala.language.implicitConversions
 
 import scala.util.Try
 import scala.concurrent.Future
 
-object routeGenerators {
+import io.circe._
+import io.circe.parser._, io.circe.syntax._
+
+object routeGenerators extends Codecs {
   import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 
   //Pattern to use existentially quantified types in scala
@@ -159,9 +162,9 @@ object routeGenerators {
 
   private[this] def addCommandToParams(
     params: Map[String, Json]
-  ): Map[String, Json] = params + ("action" -> Json.fromString("CommandSingleton"))
+  ): Map[String, Json] = params + ("action" -> Command.asJson)
 
   private[this] def addQueryToParams(
     params: Map[String, Json]
-  ): Map[String, Json] = params + ("action" -> Json.fromString("QuerySingleton"))
+  ): Map[String, Json] = params + ("action" -> Query.asJson)
 }
