@@ -47,8 +47,8 @@ Have a look at `examples/src/main/scala` for a working example.
 
 ## Missing Features
 
-- annotation syntax for providing authentication and specifying request type (`@auth def controllerMethod`, `@command def controllerMethod`)
-- currently both Get and Post are generated for each method (see branch commandsAndQueries for an attempt)
-- Improved user handling. We are currently just returning the token
+- [x] annotation syntax for providing authentication and specifying request type (`@auth def controllerMethod`, `@command def controllerMethod`)
+- [x] currently both Get and Post are generated for each method (see branch commandsAndQueries for an attempt)
+- [ ] Improved user handling. We are currently just returning the token
 
 
