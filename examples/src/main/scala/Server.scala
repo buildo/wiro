@@ -40,9 +40,13 @@ object ApiImpl {
   import interface._
   import wiro.annotation._
 
+  case class User(
+    name: String
+  )
+
   // server-side implementation
   object DoghouseApiImpl extends DoghouseApi {
-    @auth
+    @token
     @command
     override def getPuppy(
       puppyName: String

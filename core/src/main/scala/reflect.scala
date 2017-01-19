@@ -15,8 +15,8 @@ package object annotation {
   import scala.annotation.StaticAnnotation
   import scala.annotation.compileTimeOnly
 
-  class auth extends StaticAnnotation {
-    def macroTransform(annottees: Any*): Any = macro authMacro.impl
+  class token[T] extends StaticAnnotation {
+    def macroTransform(annottees: Any*): Any = macro tokenMacro.impl[T]
   }
 
   class command extends StaticAnnotation {
@@ -27,8 +27,8 @@ package object annotation {
     def macroTransform(annottees: Any*): Any = macro commandMacro.impl
   }
 
-  object authMacro {
-    def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
+  object tokenMacro {
+    def impl[T](c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
       import c.universe._
       val result = annottees.map(_.tree).toList match {
         case q"$annots def $methodName(...$args): $tpe = $body" :: nil =>

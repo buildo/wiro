@@ -7,7 +7,7 @@ import wiro.annotation._
 
 object interface {
   trait DoghouseApi {
-    @auth
+    @token
     @command
     def getPuppy(puppyName: String): Future[Dog]
   }
