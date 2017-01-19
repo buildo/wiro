@@ -44,7 +44,7 @@ object ApiImpl {
   object DoghouseApiImpl extends DoghouseApi {
     @auth
     @command
-    def getPuppy(
+    override def getPuppy(
       puppyName: String
     ) = Future(Dog(puppyName))
   }

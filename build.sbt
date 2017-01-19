@@ -18,7 +18,7 @@ val commonDependencies = Seq(
   autowire,
   akkaHttp,
   akkaHttpCirce,
-  scalaReflect,
+  scalaReflect
 ) ++ circeDependencies
 
 lazy val commonSettings = Seq(
