@@ -2,8 +2,6 @@
 
 Wiro is a library for generating HTTP routes from traits.
 
-**DISCLAIMER: This is currently a POC**
-
 ## What's wrong with routers?
 
 After years spent writing routers we realized that routes were merely a one-to-one mapping with controllers' methods.
@@ -16,31 +14,51 @@ This is sometimes referred to as *WYGOPIAO*: What You GET Or POST Is An Operatio
 
 ## Example
 
-Trait and implementation:
-
 ```scala
-case class Kitten(name: String)
-trait CathouseApi {
-  def getKitten(name: String): Future[Kitten]
+case class Dog(name: String)
+
+case object ParentalControlError
+
+trait DoghouseApi {
+  @token
+  @command
+  def getPuppy(
+    puppyName: String
+  ): Future[Either[ParentalControlError.type, Dog]]
 }
 
-object CathouseApiImpl with CathouseApi {
-  def getKitten(name: String) = Future(Kitten(name = name))
+object DoghouseApiImpl extends DoghouseApi {
+  @token
+  @command
+  override def getPuppy(
+    puppyName: String
+  ): Future[Either[ParentalControlError.type, Dog]] = Future(Left(ParentalControlError))
 }
-```
 
-Run server:
-
-```scala
-implicit object CathouseRouter extends RouteGenerator[CathouseApiImpl.type] {
-  val routes = route[CathouseApi](CathouseApiImpl)
-  val tp = typePath[CathouseApi]
+implicit def DoghouseRouter = new RouteGenerator[DoghouseApiImpl.type] {
+  val routes = route[DoghouseApi](DoghouseApiImpl)
+  val tp = typePath[DoghouseApi]
 }
+
+implicit def teapotToResponse = new ToHttpResponse[ParentalControlError.type] {
+  def response = HttpResponse(
+    status = StatusCodes.BlockedByParentalControls,
+    entity = "Don't do that!"
+  )
+}
+
+implicit val system = ActorSystem()
+implicit val materializer = ActorMaterializer()
 
 val rpcServer = new HttpRPCServer(
   config = ServerConfig("localhost", 8080),
-  controllers = Seq(CoghouseApiImpl)
+  controllers = List(DoghouseApiImpl)
 )
+```
+
+```bash
+curl -XPOST http://localhost:8080/DoghouseApi/getPuppy -H "Content-Type: application/json" -H "Authorization: Token token=sadasdsa" -d '{"puppyName": "blabla"}'
+> Don't do that!
 ```
 
 Have a look at `examples/src/main/scala` for a working example.
