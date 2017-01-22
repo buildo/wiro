@@ -57,7 +57,10 @@ val rpcServer = new HttpRPCServer(
 ```
 
 ```bash
-curl -XPOST http://localhost:8080/DoghouseApi/getPuppy -H "Content-Type: application/json" -H "Authorization: Token token=sadasdsa" -d '{"puppyName": "blabla"}'
+curl -XPOST http://localhost:8080/DoghouseApi/getPuppy \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Token token=sadasdsa" \
+  -d '{"puppyName": "blabla"}'
 > Don't do that!
 ```
 
