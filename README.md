@@ -40,7 +40,7 @@ implicit def DoghouseRouter = new RouteGenerator[DoghouseApiImpl.type] {
   val tp = typePath[DoghouseApi]
 }
 
-implicit def teapotToResponse = new ToHttpResponse[ParentalControlError.type] {
+implicit def parentalControlResponse = new ToHttpResponse[ParentalControlError.type] {
   def response = HttpResponse(
     status = StatusCodes.BlockedByParentalControls,
     entity = "Don't do that!"
