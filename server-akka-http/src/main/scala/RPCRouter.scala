@@ -1,15 +1,14 @@
 package wiro.server.akkaHttp
 
 import akka.http.scaladsl.server.Directives._
-
 import akka.http.scaladsl.model.headers.HttpChallenges
-import akka.http.scaladsl.server.{ Route, Directive1, AuthenticationFailedRejection, StandardRoute }
+import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.AuthenticationFailedRejection.CredentialsRejected
+import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 import de.heikoseeberger.akkahttpcirce.CirceSupport._
 
-import wiro.models.{ RpcRequest, WiroRequest, Command, Query }
-
-import wiro.models.Codecs
+import wiro.models._
+import FailSupport._
 
 import scala.language.implicitConversions
 
@@ -17,17 +16,12 @@ import scala.util.Try
 import scala.concurrent.Future
 
 import io.circe._
-import io.circe.parser._, io.circe.syntax._
+import io.circe.syntax._
 
-object routeGenerators extends Codecs {
-  import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
-
-  //Pattern to use existentially quantified types in scala
-  case class GeneratorBox[T: RouteGenerator](t: T) {
-    def routify = implicitly[RouteGenerator[T]].buildRoute
-  }
-
-  implicit def boxer[T: RouteGenerator](t: T) = new GeneratorBox(t)
+object RouteGenerators extends CodecsEncoder {
+  def myExceptionHandler = ExceptionHandler {
+    case f@FailException(_) => complete(f.response)
+  } 
 
   private[this] def withToken: Directive1[Option[String]] = {
     val authDirective: Directive1[Option[String]] = headerValueByName("Authorization")
@@ -42,7 +36,7 @@ object routeGenerators extends Codecs {
   }
 
   //TODO Don't necessarily need the type here, it can be simplified (no boxing)
-  trait RouteGenerator[T] extends RPCController {
+  trait RouteGenerator[A] extends RPCController {
     def routes: autowire.Core.Router[Json]
     //complete path of the trait implementation, required by autowire to locate the method
     def tp: Seq[String]
@@ -77,7 +71,7 @@ object routeGenerators extends Codecs {
     }
 
     //Generates POST requests
-    private[this] def commands: Route = {
+    private[this] def commands: Route = handleExceptions(myExceptionHandler) {
       (post & pathPrefix(path / Segment)) { method =>
         entity(as[Json]) { request =>
           val rpcRequest = RpcRequest(
@@ -108,7 +102,22 @@ object routeGenerators extends Codecs {
       tryUnwrapRequest: Try[Future[Json]]
     ): StandardRoute = {
       tryUnwrapRequest match {
-        case scala.util.Success(res) => complete(res)
+        case scala.util.Success(res) => Try(res) match {
+          case scala.util.Success(completion) =>
+            try {
+              complete(completion)
+            } catch {
+              case e: Throwable =>
+                e.printStackTrace
+                throw e
+            }
+          case scala.util.Failure(fail) =>
+            fail.printStackTrace
+            complete(HttpResponse(
+              status = StatusCodes.MethodNotAllowed,
+              entity = "aaa"
+            ))
+        }
         case scala.util.Failure(f) => handleUnwrapErrors(f)
       }
     }
@@ -167,4 +176,14 @@ object routeGenerators extends Codecs {
   private[this] def addQueryToParams(
     params: Map[String, Json]
   ): Map[String, Json] = params + ("action" -> Query.asJson)
+
+  object BoxingSupport {
+    //Pattern to use existentially quantified types in scala
+    case class GeneratorBox[A: RouteGenerator](a: A) {
+      def routify = implicitly[RouteGenerator[A]].buildRoute
+    }
+
+    implicit def boxer[A: RouteGenerator](a: A) =
+      new GeneratorBox[A](a)
+  }
 }

@@ -1,18 +1,17 @@
 package wiro.server.akkaHttp
-import wiro.models.ServerConfig
 
+import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
-import wiro.server.akkaHttp.routeGenerators._
+import akka.http.scaladsl.server.StandardRoute
 
 import scala.io.StdIn
 
-import io.circe._
-import io.circe.syntax._
-
-import wiro.models.Codecs
+import wiro.models.ServerConfig
+import wiro.server.akkaHttp.RouteGenerators._
+import wiro.server.akkaHttp.RouteGenerators.BoxingSupport._
 
 class HttpRPCServer(
   config: ServerConfig,
@@ -33,14 +32,4 @@ class HttpRPCServer(
   bindingFuture
     .flatMap(_.unbind()) // trigger unbinding from the port
     .onComplete(_ => system.terminate()) // and shutdown when done
-}
-
-trait RPCController extends autowire.Server[Json, Decoder, Encoder] with Codecs {
-  def write[Result: Encoder](r: Result): Json = r.asJson
-  //TODO handle circe error here
-  def read[Result: Decoder](p: Json): Result = p.as[Result].right.get
-
-  def routes: Router
-  def tp: Seq[String]
-  def path: String = tp.last
 }

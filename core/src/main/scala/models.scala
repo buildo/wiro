@@ -29,12 +29,19 @@ package object models {
   type Command = Command.type
   type Query = Query.type
 
-  trait Codecs {
+  trait CodecsEncoder {
     implicit val encodeCommand: Encoder[Command] = new Encoder[Command] {
         final def apply(a: Command): Json =
         Json.obj("object" -> Json.fromString(s"${a.productPrefix}"))
     }
 
+    implicit val encodeQuery: Encoder[Query] = new Encoder[Query] {
+      final def apply(a: Query): Json =
+        Json.obj("object" -> Json.fromString("${a.productPrefix}"))
+    }
+  }
+
+  trait CodecsDecoder {
     implicit val decodeCommand: Decoder[Command] =
       Decoder.instance { hCursor =>
         hCursor.get[String]("object") match {
@@ -46,11 +53,6 @@ package object models {
             Left(DecodingFailure("Unmatched object", hCursor.history))
         }
       }
-
-    implicit val encodeQuery: Encoder[Query] = new Encoder[Query] {
-      final def apply(a: Query): Json =
-        Json.obj("object" -> Json.fromString("${a.productPrefix}"))
-    }
 
     implicit val decodeQuery: Decoder[Query] =
       Decoder.instance { hCursor =>

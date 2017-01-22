@@ -8,58 +8,73 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 
-import wiro.server.akkaHttp.routeGenerators._
+import wiro.server.akkaHttp.RouteGenerators._
+
+import io.circe.generic.auto._
+
+object errors {
+  import FailSupport._
+  import controllers.ImATeaPot
+
+  implicit def teapotToResponse = new ToHttpResponse[ImATeaPot.type] {
+    def response = HttpResponse(
+      status = StatusCodes.BlockedByParentalControls,
+      entity = "Don't do that!"
+    )
+  }
+}
+
+object router {
+  import wiro.reflect._
+  import controllers._
+  import models._
+  import errors._
+  import FailSupport._
+
+  implicit def DoghouseRouter = new RouteGenerator[DoghouseApiImpl.type] {
+    val routes = route[DoghouseApi](DoghouseApiImpl)
+    val tp = typePath[DoghouseApi]
+  }
+}
 
 object Server extends App {
-  import wiro.reflect._
-  import interface._
-  import ApiImpl._
-  import io.circe.generic.auto._
+  import router._
+  import controllers._
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
 
-  implicit object CathouseRouter extends RouteGenerator[CathouseApiImpl.type] {
-    val routes = route[CathouseApi](CathouseApiImpl)
-    val tp = typePath[CathouseApi]
-  }
-
-  implicit object DoghouseRouter extends RouteGenerator[DoghouseApiImpl.type] {
-    val routes = route[DoghouseApi](DoghouseApiImpl)
-    val tp = typePath[DoghouseApi]
-  }
-
   val rpcServer = new HttpRPCServer(
     config = ServerConfig("localhost", 8080),
-    controllers = List(DoghouseApiImpl, CathouseApiImpl)
+    controllers = List(DoghouseApiImpl)
   )
 }
 
-object ApiImpl {
-  import interface._
+object models {
+  case class Dog(name: String)
+  case class Kitten(name: String)
+}
+
+object controllers {
+  import models._
   import wiro.annotation._
+  import FailSupport._
 
-  case class User(
-    name: String
-  )
+  case object ImATeaPot
 
-  // server-side implementation
+  trait DoghouseApi {
+    @token
+    @command
+    def getPuppy(puppyName: String): Future[Either[ImATeaPot.type, Dog]]
+  }
+
   object DoghouseApiImpl extends DoghouseApi {
     @token
     @command
     override def getPuppy(
       puppyName: String
-    ) = Future(Dog(puppyName))
-  }
-
-  object CathouseApiImpl extends CathouseApi {
-    override def getKitten(
-      kittenName: String
-    ) = Future(Kitten(kittenName))
-
-    override def getKittens(
-      number: Int
-    ) = Future(List.fill(number)(Kitten("gattino")))
+    ): Future[Either[ImATeaPot.type, Dog]] = Future(Left(ImATeaPot))
   }
 }
