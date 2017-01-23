@@ -102,22 +102,7 @@ object RouteGenerators extends CodecsEncoder {
       tryUnwrapRequest: Try[Future[Json]]
     ): StandardRoute = {
       tryUnwrapRequest match {
-        case scala.util.Success(res) => Try(res) match {
-          case scala.util.Success(completion) =>
-            try {
-              complete(completion)
-            } catch {
-              case e: Throwable =>
-                e.printStackTrace
-                throw e
-            }
-          case scala.util.Failure(fail) =>
-            fail.printStackTrace
-            complete(HttpResponse(
-              status = StatusCodes.MethodNotAllowed,
-              entity = "aaa"
-            ))
-        }
+        case scala.util.Success(res) => complete(res)
         case scala.util.Failure(f) => handleUnwrapErrors(f)
       }
     }
