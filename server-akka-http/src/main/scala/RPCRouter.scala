@@ -114,6 +114,11 @@ object RouteGenerators {
     ) = throwable match {
       case autowire.Error.InvalidInput(xs) =>
         handleAutowireInputErrors(xs)
+      case e: autowire.Error.InvalidInput =>
+        complete(HttpResponse(
+          status = StatusCodes.UnprocessableEntity,
+          entity = "Unprocessable entity"
+        ))
       case _: scala.MatchError =>
         complete(HttpResponse(
           status = StatusCodes.MethodNotAllowed,
@@ -121,7 +126,6 @@ object RouteGenerators {
         ))
       case e: Exception =>
         //TODO find nicer way for this
-        e.printStackTrace
         complete(HttpResponse(
           status = StatusCodes.InternalServerError,
           entity = "Internal Error"
