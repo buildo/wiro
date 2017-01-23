@@ -5,7 +5,7 @@ import io.circe.syntax._
 
 object FailSupport {
   case class FailException[T: ToHttpResponse](hasResponse: T) extends Throwable {
-    def response = implicitly[ToHttpResponse[T]].response
+    def response = implicitly[ToHttpResponse[T]].response(hasResponse)
   }
 
   implicit def wiroCanFailEncoder[T: ToHttpResponse, A: Encoder] = new WiroEncoder[Either[T, A]] {

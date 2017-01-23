@@ -16,39 +16,37 @@ import io.circe.generic.auto._
 
 object errors {
   import FailSupport._
-  import controllers.ImATeaPot
+  import controllers.Nope
 
-  implicit def teapotToResponse = new ToHttpResponse[ImATeaPot.type] {
-    def response = HttpResponse(
-      status = StatusCodes.BlockedByParentalControls,
-      entity = "Don't do that!"
+  import io.circe.syntax._
+  implicit def nopeToResponse = new ToHttpResponse[Nope] {
+    def response(error: Nope) = HttpResponse(
+      status = StatusCodes.UnprocessableEntity,
+      entity = error.asJson.noSpaces
     )
   }
 }
 
-object router {
-  import wiro.reflect._
+object Server extends App {
   import controllers._
+  import wiro.reflect._
   import models._
   import errors._
   import FailSupport._
 
-  implicit def DoghouseRouter = new RouteGenerator[DoghouseApiImpl.type] {
-    val routes = route[DoghouseApi](DoghouseApiImpl)
+  val doghouseApi = new DoghouseApiImpl
+
+  implicit def DoghouseRouter = new RouteGenerator[DoghouseApiImpl] {
+    val routes = route[DoghouseApi](doghouseApi)
     val tp = typePath[DoghouseApi]
   }
-}
-
-object Server extends App {
-  import router._
-  import controllers._
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
 
   val rpcServer = new HttpRPCServer(
     config = ServerConfig("localhost", 8080),
-    controllers = List(DoghouseApiImpl)
+    controllers = List(doghouseApi)
   )
 }
 
@@ -62,19 +60,19 @@ object controllers {
   import wiro.annotation._
   import FailSupport._
 
-  case object ImATeaPot
+  case class Nope(msg: String)
 
   trait DoghouseApi {
     @token
     @command
-    def getPuppy(puppyName: String): Future[Either[ImATeaPot.type, Dog]]
+    def getPuppy(puppyName: String): Future[Either[Nope, Dog]]
   }
 
-  object DoghouseApiImpl extends DoghouseApi {
+  class DoghouseApiImpl() extends DoghouseApi {
     @token
     @command
     override def getPuppy(
       puppyName: String
-    ): Future[Either[ImATeaPot.type, Dog]] = Future(Left(ImATeaPot))
+    ): Future[Either[Nope, Dog]] = Future(Left(Nope("Not doing that")))
   }
 }
