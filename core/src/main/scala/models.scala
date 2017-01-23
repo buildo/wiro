@@ -37,7 +37,7 @@ package object models {
 
     implicit val encodeQuery: Encoder[Query] = new Encoder[Query] {
       final def apply(a: Query): Json =
-        Json.obj("object" -> Json.fromString("${a.productPrefix}"))
+        Json.obj("object" -> Json.fromString(s"${a.productPrefix}"))
     }
   }
 
