@@ -1,9 +1,8 @@
 package wiro.server.akkaHttp
 
 import io.circe.{ Decoder, Json }
-import wiro.models.{ CodecsDecoder, CodecsEncoder }
 
-trait RPCController extends autowire.Server[Json, Decoder, WiroEncoder] with CodecsDecoder with CodecsEncoder {
+trait RPCController extends autowire.Server[Json, Decoder, WiroEncoder] {
   def write[Result: WiroEncoder](r: Result): Json =
     implicitly[WiroEncoder[Result]].encode(r)
 

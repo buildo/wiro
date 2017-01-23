@@ -24,7 +24,7 @@ package object annotation {
   }
 
   class query extends StaticAnnotation {
-    def macroTransform(annottees: Any*): Any = macro commandMacro.impl
+    def macroTransform(annottees: Any*): Any = macro queryMacro.impl
   }
 
   object tokenMacro {
@@ -52,12 +52,12 @@ package object annotation {
       val result = annottees.map(_.tree).toList match {
         case q"$annots def $methodName(...$args): $tpe = $body" :: nil =>
           val allArgs = args.map{
-            case innerArgs => q"val action: Command" +: innerArgs
+            case innerArgs => q"val actionCommand: String" +: innerArgs
           }
           q"$annots def $methodName(...$allArgs): $tpe = $body"
         case q"$annots def $methodName(...$args): $tpe" :: nil =>
           val allArgs = args.map{
-            case innerArgs => q"val action: Command" +: innerArgs
+            case innerArgs => q"val actionCommand: String" +: innerArgs
           }
           q"$annots def $methodName(...$allArgs): $tpe"
       }
@@ -71,12 +71,12 @@ package object annotation {
       val result = annottees.map(_.tree).toList match {
         case q"$annots def $methodName(...$args): $tpe = $body" :: nil =>
           val allArgs = args.map{
-            case innerArgs => q"val action: Query" +: innerArgs
+            case innerArgs => q"val actionQuery: String" +: innerArgs
           }
           q"$annots def $methodName(...$allArgs): $tpe = $body"
         case q"$annots def $methodName(...$args): $tpe" :: nil =>
           val allArgs = args.map{
-            case innerArgs => q"val action: Query" +: innerArgs
+            case innerArgs => q"val actionQuery: String" +: innerArgs
           }
           q"$annots def $methodName(...$allArgs): $tpe"
       }

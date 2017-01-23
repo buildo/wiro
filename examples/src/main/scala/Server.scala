@@ -2,7 +2,7 @@ package wiro.apps
 
 import scala.concurrent.Future
 import wiro.server.akkaHttp._
-import wiro.models.{ ServerConfig, Command }
+import wiro.models.ServerConfig
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

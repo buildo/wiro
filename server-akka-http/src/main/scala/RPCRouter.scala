@@ -18,8 +18,8 @@ import scala.concurrent.Future
 import io.circe._
 import io.circe.syntax._
 
-object RouteGenerators extends CodecsEncoder {
-  def myExceptionHandler = ExceptionHandler {
+object RouteGenerators {
+  def exceptionHandler = ExceptionHandler {
     case f@FailException(_) => complete(f.response)
   } 
 
@@ -40,7 +40,9 @@ object RouteGenerators extends CodecsEncoder {
     def routes: autowire.Core.Router[Json]
     //complete path of the trait implementation, required by autowire to locate the method
     def tp: Seq[String]
-    def buildRoute: Route = commands ~ queries
+    def buildRoute: Route = handleExceptions(exceptionHandler) {
+      commands ~ queries
+    }
 
     //Generates GET requests
     private[this] def queries: Route = {
@@ -71,7 +73,7 @@ object RouteGenerators extends CodecsEncoder {
     }
 
     //Generates POST requests
-    private[this] def commands: Route = handleExceptions(myExceptionHandler) {
+    private[this] def commands: Route = {
       (post & pathPrefix(path / Segment)) { method =>
         entity(as[Json]) { request =>
           val rpcRequest = RpcRequest(
@@ -130,17 +132,26 @@ object RouteGenerators extends CodecsEncoder {
   private[this] def handleAutowireInputErrors(
     xs: autowire.Error.Param
   ): StandardRoute = xs match {
-    case autowire.Error.Param.Missing(param) =>
-      complete(HttpResponse(
-        status = StatusCodes.UnprocessableEntity,
-        entity = s"Missing parameter $param from input"
-      ))
-    case autowire.Error.Param.Invalid(param, ex) =>
-      if (param == "token") reject(AuthenticationFailedRejection(
+    case autowire.Error.Param.Missing(param) => param match {
+      case "token" => reject(AuthenticationFailedRejection(
         cause = CredentialsRejected,
         challenge = HttpChallenges.basic("api")
       ))
-      else complete(HttpResponse(
+      case "actionQuery" => complete(HttpResponse(
+        status = StatusCodes.MethodNotAllowed,
+        entity = s"Method not allowed"
+      ))
+      case "actionCommand" => complete(HttpResponse(
+        status = StatusCodes.MethodNotAllowed,
+        entity = s"Method not allowed"
+      ))
+      case _ => complete(HttpResponse(
+        status = StatusCodes.UnprocessableEntity,
+        entity = s"Missing parameter $param from input"
+      ))
+    }
+    case autowire.Error.Param.Invalid(param, ex) =>
+      complete(HttpResponse(
         status = StatusCodes.UnprocessableEntity,
         entity = s"Missing parameter $param from input"
       ))
@@ -156,11 +167,11 @@ object RouteGenerators extends CodecsEncoder {
 
   private[this] def addCommandToParams(
     params: Map[String, Json]
-  ): Map[String, Json] = params + ("action" -> Command.asJson)
+  ): Map[String, Json] = params + ("actionCommand" -> Json.fromString(""))
 
   private[this] def addQueryToParams(
     params: Map[String, Json]
-  ): Map[String, Json] = params + ("action" -> Query.asJson)
+  ): Map[String, Json] = params + ("actionQuery" -> Json.fromString(""))
 
   object BoxingSupport {
     //Pattern to use existentially quantified types in scala
