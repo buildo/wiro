@@ -6,7 +6,7 @@ val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.11.0"
 
 val scalaReflect = "org.scala-lang" % "scala-reflect" % "2.11.8"
 
-val circeVersion = "0.6.1"
+val circeVersion = "0.7.0"
 
 val circeDependencies = Seq(
   "io.circe" %% "circe-core",
