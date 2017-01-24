@@ -124,8 +124,7 @@ object RouteGenerators {
           status = StatusCodes.MethodNotAllowed,
           entity = "Method not found"
         ))
-      case e: Exception =>
-        //TODO find nicer way for this
+      case _: Exception =>
         complete(HttpResponse(
           status = StatusCodes.InternalServerError,
           entity = "Internal Error"
