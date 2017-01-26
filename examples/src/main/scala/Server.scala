@@ -64,15 +64,21 @@ object controllers {
 
   trait DoghouseApi {
     @token
-    @command
-    def getPuppy(puppyName: String): Future[Either[Nope, Dog]]
+    @query
+    def getPuppy(
+      puppyName: String,
+      opt: Double
+    ): Future[Either[Nope, Dog]]
   }
 
   class DoghouseApiImpl() extends DoghouseApi {
     @token
-    @command
+    @query
     override def getPuppy(
-      puppyName: String
-    ): Future[Either[Nope, Dog]] = Future(Left(Nope("Not doing that")))
+      puppyName: String,
+      opt: Double
+    ): Future[Either[Nope, Dog]] = Future(Left{
+      Nope("Not doing that")
+    })
   }
 }
