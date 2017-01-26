@@ -3,6 +3,7 @@ package wiro
 import io.circe._
 import cats.data.Validated
 
+//Shamelessy copied by circe, author is @travisbrown
 trait CustomOptionDecoder {
   final def withReattempt[A](f: ACursor => Decoder.Result[A]): Decoder[A] = new Decoder[A] {
     final def apply(c: HCursor): Decoder.Result[A] = tryDecode(c)
@@ -21,6 +22,7 @@ trait CustomOptionDecoder {
     case c: HCursor =>
       if (c.value.isNull) rightNone else d(c) match {
         case Right(a) => Right(Some(a))
+        //removed part of the code here
         case Left(df) => Left(df)
       }
     case c: FailedCursor =>
