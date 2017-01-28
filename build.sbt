@@ -30,14 +30,14 @@ lazy val commonSettings = Seq(
   scalacOptions += "-Xplugin-require:macroparadise"
 )
 
-lazy val core = (project in file("core")).
-  settings(commonSettings: _*)
+lazy val core = project
+  .settings(commonSettings: _*)
 
-lazy val serverAkkaHttp = (project in file("server-akka-http")).
-  settings(commonSettings: _*).
-  dependsOn(core)
+lazy val serverAkkaHttp = project
+  .settings(commonSettings: _*)
+  .dependsOn(core)
 
-lazy val examples = (project in file("examples")).
-  settings(commonSettings: _*).
-  dependsOn(serverAkkaHttp)
+lazy val examples = project
+  .settings(commonSettings: _*)
+  .dependsOn(serverAkkaHttp)
 
