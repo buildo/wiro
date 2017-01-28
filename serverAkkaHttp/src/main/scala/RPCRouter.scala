@@ -21,7 +21,7 @@ object RouteGenerators {
     case f@FailException(_) => complete(f.response)
   } 
 
-  private[this] def withToken: Directive1[Option[String]] = {
+  private[this] def requestToken: Directive1[Option[String]] = {
     val authDirective: Directive1[Option[String]] = headerValueByName("Authorization")
       .flatMap { header =>
         val TokenPattern = "Token token=(.+)".r
@@ -48,18 +48,15 @@ object RouteGenerators {
       //Autowire `routes` macro takes care of checking the operation is allowed
       (get & pathPrefix(path / Segment)) { operation =>
         parameterMap { params =>
-          withToken { token =>
+          requestToken { token =>
+            val allArgs = params.map { case (k, v) => (k -> Json.fromString(v)) }
+              .withToken(token)
+              .withQuery
+
             val tryUnwrapRequest = scala.util.Try(routes(
               autowire.Core.Request(
                 path = tp :+ operation,
-                args = addQueryToParams(addTokenToParams(
-                  //`Map[String, String]` is feeding autowire macro
-                  //That's how it works even with types other than `String`
-                  params.map { case (k, v) =>
-                    (k -> Json.fromString(v))
-                  },
-                  token
-                ))
+                args = allArgs
               ))
             )
 
@@ -80,9 +77,9 @@ object RouteGenerators {
             args = request.as[Map[String, Json]].right.get
           )
 
-          withToken { token =>
+          requestToken { token =>
             val rpcRequestWithToken = rpcRequest.copy(
-              args = addCommandToParams(addTokenToParams(rpcRequest.args, token))
+              args = rpcRequest.args.withToken(token).withCommand
             )
 
             val tryUnwrapRequest = scala.util.Try(routes(
@@ -116,13 +113,18 @@ object RouteGenerators {
     case None => params
   }
 
-  private[this] def addCommandToParams(
-    params: Map[String, Json]
-  ): Map[String, Json] = params + ("actionCommand" -> Json.fromString(""))
+  implicit class PimpMyMap(m: Map[String, Json]) {
+    def withCommand: Map[String, Json] =
+      m + ("actionCommand" -> Json.fromString(""))
 
-  private[this] def addQueryToParams(
-    params: Map[String, Json]
-  ): Map[String, Json] = params + ("actionQuery" -> Json.fromString(""))
+    def withQuery: Map[String, Json] =
+      m + ("actionQuery" -> Json.fromString(""))
+
+    def withToken(token: Option[String]): Map[String, Json] = token match {
+      case Some(t) => m + ("token" -> Json.fromString(t))
+      case None => m
+    }
+  }
 
   object BoxingSupport {
     //Pattern to use existentially quantified types in scala
