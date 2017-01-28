@@ -10,7 +10,7 @@ import AutowireErrorSupport._
 
 import scala.language.implicitConversions
 
-import scala.util.Try
+import scala.util.{ Try, Success, Failure }
 import scala.concurrent.Future
 
 import io.circe._
@@ -49,20 +49,16 @@ object RouteGenerators {
       (get & pathPrefix(path / Segment)) { operation =>
         parameterMap { params =>
           requestToken { token =>
-            val allArgs = params.map { case (k, v) => (k -> Json.fromString(v)) }
-              .withToken(token)
-              .withQuery
+            val unwrappedRequest = routes(autowire.Core.Request(
+              path = tp :+ operation,
+              args = getQueryArgs(params, token)
+            ))
 
-            val tryUnwrapRequest = scala.util.Try(routes(
-              autowire.Core.Request(
-                path = tp :+ operation,
-                args = allArgs
-              ))
-            )
-
-            completeUnwrappedRequest(tryUnwrapRequest)
+            Try(unwrappedRequest) match {
+              case Success(res) => complete(res)
+              case Failure(f) => handleUnwrapErrors(f)
+            }
           }
-
         }
       }
     }
@@ -71,47 +67,31 @@ object RouteGenerators {
     private[this] def commands: Route = {
       (post & pathPrefix(path / Segment)) { method =>
         entity(as[Json]) { request =>
-          val rpcRequest = RpcRequest(
-            path = tp :+ method,
-            //TODO handle circe error
-            args = request.as[Map[String, Json]].right.get
-          )
-
           requestToken { token =>
-            val rpcRequestWithToken = rpcRequest.copy(
-              args = rpcRequest.args.withToken(token).withCommand
-            )
+            val unwrappedRequest = routes(autowire.Core.Request(
+              path = tp :+ method,
+              args = getCommandArgs(request, token)
+            ))
 
-            val tryUnwrapRequest = scala.util.Try(routes(
-              autowire.Core.Request(
-                path = rpcRequestWithToken.path,
-                args = rpcRequestWithToken.args
-              ))
-            )
-
-            completeUnwrappedRequest(tryUnwrapRequest)
+            Try(unwrappedRequest) match {
+              case Success(res) => complete(res)
+              case Failure(f) => handleUnwrapErrors(f)
+            }
           }
         }
       }
     }
-
-    private[this] def completeUnwrappedRequest(
-      tryUnwrapRequest: Try[Future[Json]]
-    ): StandardRoute = {
-      tryUnwrapRequest match {
-        case scala.util.Success(res) => complete(res)
-        case scala.util.Failure(f) => handleUnwrapErrors(f)
-      }
-    }
   }
 
-  private[this] def addTokenToParams(
-    params: Map[String, Json],
-    token: Option[String]
-  ): Map[String, Json] = token match {
-    case Some(t) => params + ("token" -> Json.fromString(t))
-    case None => params
-  }
+  def getCommandArgs(request: Json, token: Option[String]): Map[String, Json] =
+     request.as[Map[String, Json]].right.get
+       .withToken(token)
+       .withCommand
+
+  def getQueryArgs(params: Map[String, String], token: Option[String]): Map[String, Json] =
+     params.map { case (k, v) => (k -> Json.fromString(v)) }
+       .withToken(token)
+       .withQuery
 
   implicit class PimpMyMap(m: Map[String, Json]) {
     def withCommand: Map[String, Json] =
