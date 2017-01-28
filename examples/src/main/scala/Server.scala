@@ -66,8 +66,10 @@ object controllers {
     @token
     @query
     def getPuppy(
-      puppyName: String,
-      opt: Double
+      str: String,
+      dou: Double,
+      int: Int,
+      bol: Boolean
     ): Future[Either[Nope, Dog]]
   }
 
@@ -75,9 +77,15 @@ object controllers {
     @token
     @query
     override def getPuppy(
-      puppyName: String,
-      opt: Double
+      str: String,
+      dou: Double,
+      int: Int,
+      bol: Boolean
     ): Future[Either[Nope, Dog]] = Future(Left{
+      println(str)
+      println(dou)
+      println(int)
+      println(bol)
       Nope("Not doing that")
     })
   }
