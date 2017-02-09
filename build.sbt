@@ -22,8 +22,10 @@ val commonDependencies = Seq(
 ) ++ circeDependencies
 
 lazy val commonSettings = Seq(
+  bintrayOrganization := Some("buildo"),
   organization := "io.buildo",
-  version := "0.1.0",
+  licenses += ("MIT", url("https://github.com/buildo/wiro/blob/master/LICENSE")),
+  version := "0.1.1",
   scalaVersion := "2.11.8",
   libraryDependencies := commonDependencies,
   addCompilerPlugin("org.scalameta" % "paradise" % "3.0.0-M5" cross CrossVersion.full),
@@ -32,9 +34,17 @@ lazy val commonSettings = Seq(
 
 lazy val core = project
   .settings(commonSettings: _*)
+  .settings(
+    name := "wiro-core",
+    bintrayPackageLabels := Seq("buildo", "wiro", "wiro-core")
+  )
 
 lazy val serverAkkaHttp = project
   .settings(commonSettings: _*)
+  .settings(
+    name := "wiro-http-server",
+    bintrayPackageLabels := Seq("buildo", "wiro", "wiro-http-server")
+  )
   .dependsOn(core)
 
 lazy val examples = project
