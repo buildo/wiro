@@ -1,5 +1,7 @@
 tutSettings
 
+enablePlugins(GitVersioning)
+
 val autowire = "com.lihaoyi" %% "autowire" % "0.2.6"
 val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.1"
 val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.11.0"
@@ -25,10 +27,10 @@ lazy val commonSettings = Seq(
   bintrayOrganization := Some("buildo"),
   organization := "io.buildo",
   licenses += ("MIT", url("https://github.com/buildo/wiro/blob/master/LICENSE")),
-  version := "0.1.1",
   scalaVersion := "2.11.8",
+  crossScalaVersions := Seq("2.11.8", "2.12.1"),
   libraryDependencies := commonDependencies,
-  addCompilerPlugin("org.scalameta" % "paradise" % "3.0.0-M5" cross CrossVersion.full),
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
   scalacOptions += "-Xplugin-require:macroparadise"
 )
 
