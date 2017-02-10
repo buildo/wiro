@@ -49,12 +49,12 @@ object RouteGenerators {
       (get & pathPrefix(path / Segment)) { operation =>
         parameterMap { params =>
           requestToken { token =>
-            val unwrappedRequest = routes(autowire.Core.Request(
+            val unwrappedRequest = Try(routes(autowire.Core.Request(
               path = tp :+ operation,
               args = getQueryArgs(params, token)
-            ))
+            )))
 
-            Try(unwrappedRequest) match {
+            unwrappedRequest match {
               case Success(res) => complete(res)
               case Failure(f) => handleUnwrapErrors(f)
             }
@@ -68,12 +68,12 @@ object RouteGenerators {
       (post & pathPrefix(path / Segment)) { method =>
         entity(as[Json]) { request =>
           requestToken { token =>
-            val unwrappedRequest = routes(autowire.Core.Request(
+            val unwrappedRequest = Try(routes(autowire.Core.Request(
               path = tp :+ method,
               args = getCommandArgs(request, token)
-            ))
+            )))
 
-            Try(unwrappedRequest) match {
+            unwrappedRequest match {
               case Success(res) => complete(res)
               case Failure(f) => handleUnwrapErrors(f)
             }
