@@ -1,4 +1,5 @@
-tutSettings
+import com.typesafe.sbt.SbtSite.SiteKeys._
+import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
 
 enablePlugins(GitVersioning)
 
@@ -53,3 +54,36 @@ lazy val examples = project
   .settings(commonSettings: _*)
   .dependsOn(serverAkkaHttp)
 
+lazy val docs = project
+  .enablePlugins(MicrositesPlugin)
+  .settings(moduleName := "wiro-docs")
+  .settings(ghpages.settings)
+  .settings(docSettings)
+  .settings(tutScalacOptions ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
+  .dependsOn(serverAkkaHttp, examples)
+
+lazy val docSettings = Seq(
+  scalaVersion := "2.11.8",
+  crossScalaVersions := Seq("2.11.8", "2.12.1"),
+  micrositeName := "Wiro",
+  micrositeDescription := "Lightweight RPC-Http Scala library",
+  micrositeHighlightTheme := "atom-one-light",
+  micrositeHomepage := "http://buildo.github.io/wiro/",
+  micrositeBaseUrl := "/wiro",
+  micrositeGithubOwner := "buildo",
+  micrositeGithubRepo := "wiro",
+  micrositePalette := Map(
+    "brand-primary"   -> "#5B5988",
+    "brand-secondary" -> "#292E53",
+    "brand-tertiary"  -> "#222749",
+    "gray-dark"       -> "#49494B",
+    "gray"            -> "#7B7B7E",
+    "gray-light"      -> "#E5E5E6",
+    "gray-lighter"    -> "#F4F3F4",
+    "white-color"     -> "#FFFFFF"),
+  autoAPIMappings := false,
+  fork in tut := true,
+  git.remoteRepo := "git@github.com:buildo/wiro.git",
+  ghpagesNoJekyll := false,
+  includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
+)
