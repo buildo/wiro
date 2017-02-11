@@ -92,3 +92,33 @@ curl 'http://localhost:8080/UserController/find?id=3'
 ```
 
 `>> {"id":1,"username":"Pippo"}`
+
+## Specifying the controller path
+By default wiro uses the controller name in the generated path, as in `/UserController/find`.
+
+You can override this default by annotating the UserController with `@path`:
+
+```scala
+import wiro.annotation.path
+
+@path("custom")
+trait UserController {
+  // ...
+}
+```
+
+then overriding the `path` field in the `RouteGenerator` definition:
+
+```scala
+implicit def UserRouter = new RouteGenerator[UserController] {
+  val routes = route[UserController](userController)
+  val tp = typePath[UserController]
+  override val path = derivePath[UserController]
+}
+```
+
+Try this out:
+
+```bash
+curl 'http://localhost:8080/custom/find?id=3'
+```
