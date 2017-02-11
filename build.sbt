@@ -35,6 +35,10 @@ lazy val commonSettings = Seq(
   scalacOptions += "-Xplugin-require:macroparadise"
 )
 
+lazy val root = project.in(file("."))
+  .settings(commonSettings)
+  .aggregate(core, serverAkkaHttp, macros)
+
 lazy val core = project
   .settings(commonSettings: _*)
   .settings(
