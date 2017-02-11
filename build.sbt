@@ -49,6 +49,10 @@ lazy val serverAkkaHttp = project
     bintrayPackageLabels := Seq("buildo", "wiro", "wiro-http-server")
   )
   .dependsOn(core)
+  .dependsOn(macros)
+
+lazy val macros = project
+  .settings(commonSettings)
 
 lazy val examples = project
   .settings(commonSettings: _*)

@@ -1,4 +1,5 @@
 package wiro.server.akkaHttp
+
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
@@ -19,7 +20,7 @@ import io.circe.syntax._
 object RouteGenerators {
   def exceptionHandler = ExceptionHandler {
     case f@FailException(_) => complete(f.response)
-  } 
+  }
 
   private[this] def requestToken: Directive1[Option[String]] = {
     val authDirective: Directive1[Option[String]] = headerValueByName("Authorization")
@@ -34,7 +35,7 @@ object RouteGenerators {
   }
 
   //TODO Don't necessarily need the type here, it can be simplified (no boxing)
-  trait RouteGenerator[A] extends RPCController {
+  trait RouteGenerator[A] extends RPCController with PathMacro {
     def routes: autowire.Core.Router[Json]
     //complete path of the trait implementation, required by autowire to locate the method
     def tp: Seq[String]

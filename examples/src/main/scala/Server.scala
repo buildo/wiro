@@ -39,6 +39,7 @@ object Server extends App {
   implicit def DoghouseRouter = new RouteGenerator[DoghouseApiImpl] {
     val routes = route[DoghouseApi](doghouseApi)
     val tp = typePath[DoghouseApi]
+    override val path = derivePath[DoghouseApi]
   }
 
   implicit val system = ActorSystem()
@@ -62,6 +63,7 @@ object controllers {
 
   case class Nope(msg: String)
 
+  @path("woff")
   trait DoghouseApi {
     @token
     @query
