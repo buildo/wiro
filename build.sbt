@@ -18,8 +18,7 @@ val circeDependencies = Seq(
 val commonDependencies = Seq(
   autowire,
   akkaHttp,
-  akkaHttpCirce,
-  scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided"
+  akkaHttpCirce
 ) ++ circeDependencies
 
 lazy val commonSettings = Seq(
@@ -28,7 +27,9 @@ lazy val commonSettings = Seq(
   licenses += ("MIT", url("https://github.com/buildo/wiro/blob/master/LICENSE")),
   scalaVersion := "2.11.8",
   crossScalaVersions := Seq("2.11.8", "2.12.1"),
-  libraryDependencies := commonDependencies,
+  libraryDependencies :=
+    commonDependencies :+
+    scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided",
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
   scalacOptions += "-Xplugin-require:macroparadise"
 )
