@@ -63,7 +63,7 @@ object AutowireErrorSupport {
           val path = CursorOp.opsToPath(history)
           complete(HttpResponse(
             status = StatusCodes.UnprocessableEntity,
-            entity = s"Failed decoding of '${path}' on type '${tpe}'"
+            entity = s"Failed decoding of '${path}' of type '${tpe}'"
           ))
         case _ =>
           complete(HttpResponse(
