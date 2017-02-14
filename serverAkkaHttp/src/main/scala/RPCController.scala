@@ -7,9 +7,11 @@ trait RPCController extends autowire.Server[Json, Decoder, WiroEncoder] with Cus
   def write[Result: WiroEncoder](r: Result): Json =
     implicitly[WiroEncoder[Result]].encode(r)
 
-  //TODO handle circe error here
   def read[Result: Decoder](p: Json): Result =
-    p.as[Result].right.get
+    p.as[Result] match {
+      case Right(result) => result
+      case Left(error) => throw error
+    }
 
   def routes: Router
   def tp: Seq[String]
