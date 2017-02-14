@@ -62,32 +62,22 @@ object controllers {
   import FailSupport._
 
   case class Nope(msg: String)
+  case class Wa(lol: String, bah: Int, dah: Int)
 
   @path("woff")
   trait DoghouseApi {
-    @token
-    @query
+    @command
     def getPuppy(
-      str: String,
-      dou: Double,
-      int: Int,
-      bol: Boolean
+      wa: Wa
     ): Future[Either[Nope, Dog]]
   }
 
   class DoghouseApiImpl() extends DoghouseApi {
-    @token
-    @query
+    @command
     override def getPuppy(
-      str: String,
-      dou: Double,
-      int: Int,
-      bol: Boolean
+      wa: Wa
     ): Future[Either[Nope, Dog]] = Future(Left{
-      println(str)
-      println(dou)
-      println(int)
-      println(bol)
+      println(wa)
       Nope("Not doing that")
     })
   }
