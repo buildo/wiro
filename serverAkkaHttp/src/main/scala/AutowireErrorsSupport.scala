@@ -6,6 +6,8 @@ import akka.http.scaladsl.server.AuthenticationFailedRejection.CredentialsReject
 import akka.http.scaladsl.model.headers.HttpChallenges
 import akka.http.scaladsl.model._
 
+import io.circe.{ DecodingFailure, CursorOp }
+
 object AutowireErrorSupport {
   def handleUnwrapErrors(
     throwable: Throwable
@@ -55,10 +57,20 @@ object AutowireErrorSupport {
   ): StandardRoute = xs match {
     case autowire.Error.Param.Missing(param) =>
       handleMissingParamErrors(param)
-    case autowire.Error.Param.Invalid(param, ex) =>
-      complete(HttpResponse(
-        status = StatusCodes.UnprocessableEntity,
-        entity = s"Missing parameter $param from input"
-      ))
+    case autowire.Error.Param.Invalid(param, ex) => {
+      ex match {
+        case DecodingFailure(tpe, history) =>
+          val path = CursorOp.opsToPath(history)
+          complete(HttpResponse(
+            status = StatusCodes.UnprocessableEntity,
+            entity = s"Failed decoding of '${path}' on type '${tpe}'"
+          ))
+        case _ =>
+          complete(HttpResponse(
+            status = StatusCodes.UnprocessableEntity,
+            entity = s"Missing parameter $param from input"
+          ))
+      }
+    }
   }
 }
