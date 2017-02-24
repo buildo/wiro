@@ -1,0 +1,9 @@
+build:
+  wiro:
+    image: hseeberger/scala-sbt
+    commands:
+      - sbt test -Dsbt.ivy.home=/drone/.ivy
+
+cache:
+  mount:
+    - /drone/.ivy
