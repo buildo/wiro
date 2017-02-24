@@ -5,6 +5,7 @@ section: "home"
 ---
 
 [ ![Download](https://api.bintray.com/packages/buildo/maven/wiro-http-server/images/download.svg) ](https://bintray.com/buildo/maven/wiro-http-server/_latestVersion)
+[![Build Status](https://drone.our.buildo.io/api/badges/buildo/wiro/status.svg)](https://drone.our.buildo.io/buildo/wiro)
 
 <a name="getting-started"></a>
 
