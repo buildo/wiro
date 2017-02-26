@@ -134,7 +134,7 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
           """.stripMargin)
 
         Post("/user/updat", jsonEntity(data)) ~> userRouter.buildRoute ~> check {
-          status should be (MethodNotAllowed)
+          status should be (NotFound)
         }
       }
     }
@@ -187,8 +187,8 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
 
     "operation doesn't exist" should {
       "return 405" in {
-        Get("/user/fin?id=1") ~> userRouter.buildRoute ~> check {
-          status should be (MethodNotAllowed)
+        Get("/user/fin") ~> userRouter.buildRoute ~> check {
+          status should be (NotFound)
         }
       }
     }
