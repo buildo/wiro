@@ -21,8 +21,8 @@ object AutowireErrorSupport {
       ))
     case _: scala.MatchError =>
       complete(HttpResponse(
-        status = StatusCodes.MethodNotAllowed,
-        entity = "Method not found"
+        status = StatusCodes.NotFound,
+        entity = "Operation not found"
       ))
     case _: Exception =>
       complete(HttpResponse(
