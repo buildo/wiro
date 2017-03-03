@@ -5,7 +5,7 @@ enablePlugins(GitVersioning)
 
 val autowire = "com.lihaoyi" %% "autowire" % "0.2.6"
 val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.1"
-val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.11.0"
+val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.12.0"
 val akkaHttpTestKit = "com.typesafe.akka" %% "akka-http-testkit" % "10.0.3" % "test"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 
