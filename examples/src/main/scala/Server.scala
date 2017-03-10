@@ -66,14 +66,14 @@ object controllers {
 
   @path("woff")
   trait DoghouseApi {
-    @command
+    @command("puppy")
     def getPuppy(
       wa: Wa
     ): Future[Either[Nope, Dog]]
   }
 
   class DoghouseApiImpl() extends DoghouseApi {
-    @command
+    @command("puppy")
     override def getPuppy(
       wa: Wa
     ): Future[Either[Nope, Dog]] = Future(Left{

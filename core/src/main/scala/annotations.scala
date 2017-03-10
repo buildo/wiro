@@ -6,6 +6,15 @@ package object annotation {
   import scala.annotation.StaticAnnotation
   import scala.annotation.compileTimeOnly
 
+  def chooseOperationName(c: Context, methodName: String) = {
+    import c.universe._
+    c.prefix.tree match {
+      case q"new $annot($s)" => c.eval[String](c.Expr(s))
+      case q"new $annot" => methodName
+      case _ => c.abort(c.enclosingPosition, s"\n\nMissing annotation @<annot>(<name>)\n")
+    }
+  }
+
   class token extends StaticAnnotation {
     def macroTransform(annottees: Any*): Any = macro tokenMacro.impl
   }
@@ -40,17 +49,26 @@ package object annotation {
   object commandMacro {
     def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
       import c.universe._
+
       val result = annottees.map(_.tree).toList match {
         case q"$annots def $methodName(...$args): $tpe = $body" :: nil =>
           val allArgs = args.map{
             case innerArgs => q"val actionCommand: String" +: innerArgs
           }
-          q"$annots def $methodName(...$allArgs): $tpe = $body"
+          val operationName = c.universe.TermName(chooseOperationName(
+            c = c,
+            methodName = methodName.toString
+          ))
+          q"$annots def $operationName(...$allArgs): $tpe = $body"
         case q"$annots def $methodName(...$args): $tpe" :: nil =>
           val allArgs = args.map{
             case innerArgs => q"val actionCommand: String" +: innerArgs
           }
-          q"$annots def $methodName(...$allArgs): $tpe"
+          val operationName = c.universe.TermName(chooseOperationName(
+            c = c,
+            methodName = methodName.toString
+          ))
+          q"$annots def $operationName(...$allArgs): $tpe"
       }
       c.Expr[Any](result)
     }
@@ -64,12 +82,20 @@ package object annotation {
           val allArgs = args.map{
             case innerArgs => q"val actionQuery: String" +: innerArgs
           }
-          q"$annots def $methodName(...$allArgs): $tpe = $body"
+          val operationName = c.universe.TermName(chooseOperationName(
+            c = c,
+            methodName = methodName.toString
+          ))
+          q"$annots def $operationName(...$allArgs): $tpe = $body"
         case q"$annots def $methodName(...$args): $tpe" :: nil =>
           val allArgs = args.map{
             case innerArgs => q"val actionQuery: String" +: innerArgs
           }
-          q"$annots def $methodName(...$allArgs): $tpe"
+          val operationName = c.universe.TermName(chooseOperationName(
+            c = c,
+            methodName = methodName.toString
+          ))
+          q"$annots def $operationName(...$allArgs): $tpe"
       }
       c.Expr[Any](result)
     }
