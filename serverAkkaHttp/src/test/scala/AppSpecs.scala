@@ -63,6 +63,25 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
       }
     }
 
+    "operation is overridden" should {
+      "overridden route should be used" in {
+        val data = ByteString(
+          s"""
+             |{
+             |    "id": 2,
+             |    "user": {
+             |        "id": 2,
+             |        "username": "foo"
+             |    }
+             |}
+          """.stripMargin)
+
+        Post("/user/insert", jsonEntity(data)) ~> userRouter.buildRoute ~> check {
+          status should be (OK)
+        }
+      }
+    }
+
     "has unsuitable body" should {
       "return 422" in {
         val data = ByteString(
@@ -154,6 +173,14 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
       "return provided error" in {
         Get("/user/find?id=2") ~> userRouter.buildRoute ~> check {
           status should be (NotFound)
+        }
+      }
+    }
+
+    "operation is overridden" should {
+      "use overridden route should be used" in {
+        Get("/user/number") ~> userRouter.buildRoute ~> check {
+          status should be (OK)
         }
       }
     }
