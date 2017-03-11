@@ -15,8 +15,25 @@ import wiro.server.akkaHttp.RouteGenerators._
 
 object TestController {
   case class UserNotFound(userId: Int)
+  case class Conflict(userId: Int)
+  case object GenericError
+  type GenericError = GenericError.type
   case class User(id: Int, username: String)
   case class Ok(msg: String)
+
+  implicit def GenericErrorToResponse = new ToHttpResponse[GenericError] {
+    def response(error: GenericError) = HttpResponse(
+      status = StatusCodes.InternalServerError,
+      entity = "Very Bad"
+    )
+  }
+
+  implicit def ConflictToResponse = new ToHttpResponse[Conflict] {
+    def response(error: Conflict) = HttpResponse(
+      status = StatusCodes.Conflict,
+      entity = s"User already exists: ${error.userId}"
+    )
+  }
 
   implicit def notFoundToResponse = new ToHttpResponse[UserNotFound] {
     def response(error: UserNotFound) = HttpResponse(
@@ -33,6 +50,12 @@ object TestController {
 
     @query
     def find(id: Int): Future[Either[UserNotFound, User]]
+
+    @command("insert")
+    def insertUser(id: Int, user: User): Future[Either[Conflict, Ok]]
+
+    @query(name = "number")
+    def usersNumber(): Future[Either[GenericError, Int]]
   }
 
   private[this] class UserControllerImpl(implicit
@@ -48,6 +71,16 @@ object TestController {
     def find(id: Int): Future[Either[UserNotFound, User]] = Future {
       if (id == 1) Right(User(id, "foo"))
       else Left(UserNotFound(id))
+    }
+
+    @command("insert")
+    def insertUser(id: Int, user: User): Future[Either[Conflict, Ok]] = Future {
+      Right(Ok("inserted!"))
+    }
+
+    @query(name = "number")
+    def usersNumber(): Future[Either[GenericError, Int]] = Future {
+      Right(1)
     }
   }
 
