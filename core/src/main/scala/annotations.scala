@@ -31,17 +31,16 @@ package object annotation {
   object tokenMacro {
     def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
       import c.universe._
+
+      val tokenValDef: ValDef = q"val token: String"
+
       val result = annottees.map(_.tree).toList match {
         case q"$annots def $methodName(...$args): $tpe = $body" :: nil =>
-          val allArgs = args.map{
-            case innerArgs => q"val token: String" +: innerArgs
-          }
-          q"$annots def $methodName(...$allArgs): $tpe = $body"
+          val tokenArgs = args.map(tokenValDef +: _)
+          q"$annots def $methodName(...$tokenArgs): $tpe = $body"
         case q"$annots def $methodName(...$args): $tpe" :: nil =>
-          val allArgs = args.map{
-            case innerArgs => q"val token: String" +: innerArgs
-          }
-          q"$annots def $methodName(...$allArgs): $tpe"
+          val tokenArgs = args.map(tokenValDef +: _)
+          q"$annots def $methodName(...$tokenArgs): $tpe"
       }
       c.Expr[Any](result)
     }
@@ -51,25 +50,21 @@ package object annotation {
     def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
       import c.universe._
 
+      val commandValDef: ValDef = q"val actionCommand: String"
+
       val result = annottees.map(_.tree).toList match {
         case q"$annots def $methodName(...$args): $tpe = $body" :: nil =>
-          val allArgs = args.map{
-            case innerArgs => q"val actionCommand: String" +: innerArgs
-          }
-          val operationName = c.universe.TermName(chooseOperationName(
-            c = c,
-            methodName = methodName.toString
-          ))
-          q"$annots def $operationName(...$allArgs): $tpe = $body"
+          val commandArgs = args.map(commandValDef +: _)
+          val operationName = c.universe.TermName(
+            chooseOperationName(c, methodName.toString)
+          )
+          q"$annots def $operationName(...$commandArgs): $tpe = $body"
         case q"$annots def $methodName(...$args): $tpe" :: nil =>
-          val allArgs = args.map{
-            case innerArgs => q"val actionCommand: String" +: innerArgs
-          }
-          val operationName = c.universe.TermName(chooseOperationName(
-            c = c,
-            methodName = methodName.toString
-          ))
-          q"$annots def $operationName(...$allArgs): $tpe"
+          val commandArgs = args.map(commandValDef +: _)
+          val operationName = c.universe.TermName(
+            chooseOperationName(c, methodName.toString)
+          )
+          q"$annots def $operationName(...$commandArgs): $tpe"
       }
       c.Expr[Any](result)
     }
@@ -78,25 +73,22 @@ package object annotation {
   object queryMacro {
     def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
       import c.universe._
+
+      val queryValDef: ValDef = q"val actionQuery: String"
+
       val result = annottees.map(_.tree).toList match {
         case q"$annots def $methodName(...$args): $tpe = $body" :: nil =>
-          val allArgs = args.map{
-            case innerArgs => q"val actionQuery: String" +: innerArgs
-          }
-          val operationName = c.universe.TermName(chooseOperationName(
-            c = c,
-            methodName = methodName.toString
-          ))
-          q"$annots def $operationName(...$allArgs): $tpe = $body"
+          val queryArgs = args.map(queryValDef +: _)
+          val operationName = c.universe.TermName(
+            chooseOperationName(c, methodName.toString)
+          )
+          q"$annots def $operationName(...$queryArgs): $tpe = $body"
         case q"$annots def $methodName(...$args): $tpe" :: nil =>
-          val allArgs = args.map{
-            case innerArgs => q"val actionQuery: String" +: innerArgs
-          }
-          val operationName = c.universe.TermName(chooseOperationName(
-            c = c,
-            methodName = methodName.toString
-          ))
-          q"$annots def $operationName(...$allArgs): $tpe"
+          val queryArgs = args.map(queryValDef +: _)
+          val operationName = c.universe.TermName(
+            chooseOperationName(c, methodName.toString)
+          )
+          q"$annots def $operationName(...$queryArgs): $tpe"
       }
       c.Expr[Any](result)
     }
