@@ -54,7 +54,7 @@ object TestController {
     @command("insert")
     def insertUser(id: Int, user: User): Future[Either[Conflict, Ok]]
 
-    @query("number")
+    @query(name = "number")
     def usersNumber(): Future[Either[GenericError, Int]]
   }
 
@@ -78,7 +78,7 @@ object TestController {
       Right(Ok("inserted!"))
     }
 
-    @query("number")
+    @query(name = "number")
     def usersNumber(): Future[Either[GenericError, Int]] = Future {
       Right(1)
     }

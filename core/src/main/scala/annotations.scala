@@ -9,6 +9,7 @@ package object annotation {
   def chooseOperationName(c: Context, methodName: String) = {
     import c.universe._
     c.prefix.tree match {
+      case q"new $annot(name = $s)" => c.eval[String](c.Expr(s))
       case q"new $annot($s)" => c.eval[String](c.Expr(s))
       case q"new $annot" => methodName
       case _ => c.abort(c.enclosingPosition, s"\n\nMissing annotation @<annot>(<name>)\n")
