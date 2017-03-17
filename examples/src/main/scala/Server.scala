@@ -59,6 +59,7 @@ object models {
 object controllers {
   import models._
   import wiro.annotation._
+  import rpc._
   import FailSupport._
 
   case class Nope(msg: String)
@@ -70,9 +71,19 @@ object controllers {
     def getPuppy(
       wa: Wa
     ): Future[Either[Nope, Dog]]
+
+    @rpc(name = "pallino")
+    def getPallino(
+      something: String
+    ): Future[Either[Nope, Dog]]
   }
 
   class DoghouseApiImpl() extends DoghouseApi {
+    @rpc(name = "pallino")
+    override def getPallino(
+      something: String
+    ): Future[Either[Nope, Dog]] = Future(Right(Dog("pallino")))
+
     @command("puppy")
     override def getPuppy(
       wa: Wa
