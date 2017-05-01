@@ -27,7 +27,7 @@ object errors {
   }
 }
 
-object Server extends App {
+object Server extends App with MetaDataMacro {
   import controllers._
   import wiro.reflect._
   import models._
@@ -37,8 +37,9 @@ object Server extends App {
   val doghouseApi = new DoghouseApiImpl
 
   implicit def DoghouseRouter = new RouteGenerator[DoghouseApiImpl] {
-    val routes = route[DoghouseApi](doghouseApi)
-    val tp = typePath[DoghouseApi]
+    override val routes = route[DoghouseApi](doghouseApi)
+    override val methodsMetaData = deriveMetaData[DoghouseApi]
+    override val tp = typePath[DoghouseApi]
     override val path = derivePath[DoghouseApi]
   }
 
@@ -59,7 +60,6 @@ object models {
 object controllers {
   import models._
   import wiro.annotation._
-  import rpc._
   import FailSupport._
 
   case class Nope(msg: String)
@@ -67,26 +67,26 @@ object controllers {
 
   @path("woff")
   trait DoghouseApi {
-    @command("puppy")
+    @command(name = Some("puppy"))
     def getPuppy(
-      wa: Wa
+      wa: Int
     ): Future[Either[Nope, Dog]]
 
-    @rpc(name = "pallino")
+    @command(name = Some("pallino"))
     def getPallino(
       something: String
     ): Future[Either[Nope, Dog]]
   }
 
   class DoghouseApiImpl() extends DoghouseApi {
-    @rpc(name = "pallino")
+    @command(name = Some("pallino"))
     override def getPallino(
       something: String
     ): Future[Either[Nope, Dog]] = Future(Right(Dog("pallino")))
 
-    @command("puppy")
+    @command(name = Some("puppy"))
     override def getPuppy(
-      wa: Wa
+      wa: Int
     ): Future[Either[Nope, Dog]] = Future(Left{
       println(wa)
       Nope("Not doing that")
