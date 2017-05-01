@@ -119,11 +119,10 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
       }
     }
 
-    //TODO(claudio) returned errors are not optimal
     "HTTP method is wrong" should {
       "return method is missing when GET" in {
         Get("/user/update?id=1") ~> userRouter.buildRoute ~> check {
-          status should be (UnprocessableEntity)
+          rejections shouldEqual Nil
         }
       }
 
@@ -153,7 +152,7 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
           """.stripMargin)
 
         Post("/user/updat", jsonEntity(data)) ~> userRouter.buildRoute ~> check {
-          status should be (NotFound)
+          rejections shouldEqual Nil
         }
       }
     }
@@ -195,7 +194,7 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
           """.stripMargin)
 
         Post("/user/find", jsonEntity(data)) ~> userRouter.buildRoute ~> check {
-          status should be (MethodNotAllowed)
+          rejections shouldEqual Nil
         }
       }
 
@@ -213,9 +212,9 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
     }
 
     "operation doesn't exist" should {
-      "return 405" in {
+      "return be rejected" in {
         Get("/user/fin") ~> userRouter.buildRoute ~> check {
-          status should be (NotFound)
+          rejections shouldEqual Nil
         }
       }
     }
