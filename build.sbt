@@ -63,7 +63,7 @@ lazy val macros = project
 
 lazy val examples = project
   .settings(commonSettings: _*)
-  .dependsOn(serverRpc)
+  .dependsOn(serverAkkaHttp)
 
 lazy val docs = project
   .enablePlugins(MicrositesPlugin)
