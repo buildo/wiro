@@ -35,7 +35,7 @@ object RouteGenerators {
   }
 
   //TODO Don't necessarily need the type here, it can be simplified (no boxing)
-  trait RouteGenerator[A] extends RPCController with PathMacro {
+  trait RouteGenerator[A] extends RPCController with PathMacro with MetaDataMacro {
     def routes: autowire.Core.Router[Json]
     //complete path of the trait implementation, required by autowire to locate the method
     def tp: Seq[String]

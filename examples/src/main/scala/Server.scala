@@ -27,7 +27,7 @@ object errors {
   }
 }
 
-object Server extends App with MetaDataMacro {
+object Server extends App {
   import controllers._
   import wiro.reflect._
   import models._
