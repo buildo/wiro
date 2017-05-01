@@ -1,7 +1,7 @@
 package wiro.server.akkaHttp
 
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server._
+import akka.http.scaladsl.server.{ Route, Directive1, ExceptionHandler }
 import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 import de.heikoseeberger.akkahttpcirce.CirceSupport._
 
@@ -39,69 +39,68 @@ object RouteGenerators {
     def routes: autowire.Core.Router[Json]
     //complete path of the trait implementation, required by autowire to locate the method
     def tp: Seq[String]
+    def methodsMetaData: Map[String, MethodMetaData]
     def buildRoute: Route = handleExceptions(exceptionHandler) {
-      commands ~ queries
+      pathPrefix(path) {
+        methodsMetaData map { case (k, v) =>
+          v.operationType match {
+            case _: OperationType.Command => command(k, v)
+            case _: OperationType.Query => query(k, v)
+          }
+        } reduce (_ ~ _)
+      }
     }
 
-    //Generates GET requests
-    private[this] def queries: Route = {
-      //Any operation can by specified by the user here
-      //Autowire `routes` macro takes care of checking the operation is allowed
-      (get & pathPrefix(path / Segment)) { operation =>
-        parameterMap { params =>
-          requestToken { token =>
-            val unwrappedRequest = Try(routes(autowire.Core.Request(
-              path = tp :+ operation,
-              args = getQueryArgs(params, token)
-            )))
+    private[this] def operationName(operationFullName: String, methodMetaData: MethodMetaData): String =
+      methodMetaData.operationType.name match {
+        case Some(n) => n
+        case None => operationFullName.split("""\.""").last
+      }
 
-            unwrappedRequest match {
-              case Success(res) => complete(res)
-              case Failure(f) => handleUnwrapErrors(f)
-            }
+    private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route = {
+      (get & pathPrefix(operationName(operationFullName, methodMetaData)) & parameterMap) { params =>
+        requestToken { token =>
+          val appliedRequest = Try(routes(autowire.Core.Request(
+            path = operationFullName.split("""\."""),
+            args = queryArgs(params, token)
+          )))
+
+          appliedRequest match {
+            case Success(res) => complete(res)
+            case Failure(f) => handleUnwrapErrors(f)
           }
         }
       }
     }
 
     //Generates POST requests
-    private[this] def commands: Route = {
-      (post & pathPrefix(path / Segment)) { method =>
-        entity(as[Json]) { request =>
-          requestToken { token =>
-            val unwrappedRequest = Try(routes(autowire.Core.Request(
-              path = tp :+ method,
-              args = getCommandArgs(request, token)
-            )))
+    private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route = {
+      (post & pathPrefix(operationName(operationFullName, methodMetaData)) & entity(as[Json])) { request =>
+        requestToken { token =>
+          val appliedRequest = Try(routes(autowire.Core.Request(
+            path = operationFullName.split("""\."""),
+            args = commandArgs(request, token)
+          )))
 
-            unwrappedRequest match {
-              case Success(res) => complete(res)
-              case Failure(f) => handleUnwrapErrors(f)
-            }
+          appliedRequest match {
+            case Success(res) => complete(res)
+            case Failure(f) => handleUnwrapErrors(f)
           }
         }
       }
     }
   }
 
-  def getCommandArgs(request: Json, token: Option[String]): Map[String, Json] =
+  def commandArgs(request: Json, token: Option[String]): Map[String, Json] =
     request.as[Map[String, Json]].right.get
       .withToken(token)
-      .withCommand
 
-  def getQueryArgs(params: Map[String, String], token: Option[String]): Map[String, Json] = {
+  def queryArgs(params: Map[String, String], token: Option[String]): Map[String, Json] = {
     params.map { case (k, v) => (k -> v.asJson) }
       .withToken(token)
-      .withQuery
   }
 
   implicit class PimpMyMap(m: Map[String, Json]) {
-    def withCommand: Map[String, Json] =
-      m + ("actionCommand" -> Json.fromString(""))
-
-    def withQuery: Map[String, Json] =
-      m + ("actionQuery" -> Json.fromString(""))
-
     def withToken(token: Option[String]): Map[String, Json] = token match {
       case Some(t) => m + ("token" -> Json.fromString(t))
       case None => m
