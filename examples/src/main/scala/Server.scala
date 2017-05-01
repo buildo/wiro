@@ -79,12 +79,10 @@ object controllers {
   }
 
   class DoghouseApiImpl() extends DoghouseApi {
-    @command(name = Some("pallino"))
     override def getPallino(
       something: String
     ): Future[Either[Nope, Dog]] = Future(Right(Dog("pallino")))
 
-    @command(name = Some("puppy"))
     override def getPuppy(
       wa: Int
     ): Future[Either[Nope, Dog]] = Future(Left{
