@@ -54,15 +54,6 @@ lazy val serverAkkaHttp = project
   .dependsOn(core)
   .dependsOn(macros)
 
-lazy val serverRpc = project
-  .settings(commonSettings: _*)
-  .settings(
-    name := "wiro-rpc-server",
-    bintrayPackageLabels := Seq("buildo", "wiro", "wiro-http-server")
-  )
-  .dependsOn(core)
-  .dependsOn(serverAkkaHttp)
-
 lazy val macros = project
   .settings(commonSettings)
   .settings(
