@@ -13,7 +13,7 @@ import wiro.server.akkaHttp._
 import wiro.server.akkaHttp.FailSupport._
 import wiro.server.akkaHttp.RouteGenerators._
 
-object TestController {
+object TestController extends RouterDerivationMacro {
   case class UserNotFound(userId: Int)
   case class Conflict(userId: Int)
   case object GenericError
@@ -81,10 +81,5 @@ object TestController {
   }
 
   private[this] val userController = new UserControllerImpl(): UserController
-  def userRouter = new RouteGenerator[UserController] {
-    override val routes = route[UserController](userController)
-    override val tp = typePath[UserController]
-    override val methodsMetaData = deriveMetaData[UserController]
-    override val path = derivePath[UserController]
-  }
+  def userRouter = deriveRouter[UserController](userController)
 }
