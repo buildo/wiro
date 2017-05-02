@@ -27,21 +27,16 @@ object errors {
   }
 }
 
-object Server extends App {
+object Server extends App with RouterDerivationMacro {
   import controllers._
   import wiro.reflect._
   import models._
   import errors._
   import FailSupport._
 
-  val doghouseApi = new DoghouseApiImpl
+  val doghouseApi = new DoghouseApiImpl: DoghouseApi
 
-  implicit def DoghouseRouter = new RouteGenerator[DoghouseApiImpl] {
-    override val routes = route[DoghouseApi](doghouseApi)
-    override val methodsMetaData = deriveMetaData[DoghouseApi]
-    override val tp = typePath[DoghouseApi]
-    override val path = derivePath[DoghouseApi]
-  }
+  implicit def DoghouseRouter = deriveRouter[DoghouseApi](doghouseApi)
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
