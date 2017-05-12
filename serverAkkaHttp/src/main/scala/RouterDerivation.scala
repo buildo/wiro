@@ -15,6 +15,7 @@ object RouterDerivationMacro extends RouterDerivationMacro {
     import c.universe._
     val tpe = weakTypeOf[A]
 
+    //check only annotations of path type
     val pathAnnotated = tpe.typeSymbol.annotations.collectFirst {
       case pathAnnotation if pathAnnotation.tpe <:< c.weakTypeOf[path] => pathAnnotation
     }
