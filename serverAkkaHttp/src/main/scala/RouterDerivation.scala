@@ -21,7 +21,7 @@ object RouterDerivationMacro extends RouterDerivationMacro {
     }
 
     val derivePath = pathAnnotated match {
-      case None => q""
+      case None => EmptyTree
       case _ => q"override val path = derivePath[$tpe]"
     }
 
