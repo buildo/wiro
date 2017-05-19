@@ -65,7 +65,7 @@ object errors {
   }
 }
 
-object Client extends App with PathMacro with MetaDataMacro {
+object Client extends App with ClientDerivationMacro {
   import controllers._
   import autowire._
   import wiro.reflect._
@@ -75,23 +75,15 @@ object Client extends App with PathMacro with MetaDataMacro {
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
 
-  val doghouseClient = new RPCClientContext[DoghouseApi] {
-    override val methodsMetaData = deriveMetaData[DoghouseApi]
-    override val tp = typePath[DoghouseApi]
-    override val path = derivePath[DoghouseApi]
-  }
-
+  val doghouseClient = deriveClientContext[DoghouseApi]
   val rpcClient = new RPCClient(config, doghouseClient)
 
   rpcClient[DoghouseApi].getPuppy(1).call() map { a =>
-    println("ASDSDASDDSDADSDADSADADAS")
     println(a)
   }
-
-  Thread sleep (100)
 }
 
-object Server extends App with RouterDerivationMacro with MetaDataMacro {
+object Server extends App with RouterDerivationMacro {
   import controllers._
   import wiro.reflect._
   import models._
@@ -99,12 +91,7 @@ object Server extends App with RouterDerivationMacro with MetaDataMacro {
   import FailSupport._
 
   val doghouseApi = new DoghouseApiImpl: DoghouseApi
-  implicit def DoghouseRouter = new RouteGenerator[DoghouseApi] {
-    override val routes = route[DoghouseApi](doghouseApi)
-    override val methodsMetaData = deriveMetaData[DoghouseApi]
-    override val tp = typePath[DoghouseApi]
-    override val path = derivePath[DoghouseApi]
-  }
+  implicit def DoghouseRouter = deriveRouter[DoghouseApi](doghouseApi)
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()

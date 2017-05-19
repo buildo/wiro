@@ -1,7 +1,7 @@
 package wiro.client
 
 import wiro.models.Config
-import wiro.server.akkaHttp.MethodMetaData
+import wiro.server.akkaHttp.{ MethodMetaData, MetaDataMacro, PathMacro }
 
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
@@ -13,10 +13,10 @@ import akka.actor.ActorSystem
 import scala.concurrent.{ Future, ExecutionContext }
 
 import io.circe._
-import io.circe.syntax._;
+import io.circe.syntax._
 import de.heikoseeberger.akkahttpcirce.CirceSupport._
 
-trait RPCClientContext[T] {
+trait RPCClientContext[T] extends MetaDataMacro with PathMacro {
   def methodsMetaData: Map[String, MethodMetaData]
   def tp: Seq[String]
   def path: String = tp.last
