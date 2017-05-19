@@ -54,6 +54,15 @@ lazy val serverAkkaHttp = project
   .dependsOn(core)
   .dependsOn(macros)
 
+lazy val clientAkkaHttp = project
+  .settings(commonSettings: _*)
+  .settings(
+    name := "wiro-http-client",
+    bintrayPackageLabels := Seq("buildo", "wiro", "wiro-http-client")
+  )
+  .dependsOn(core)
+  .dependsOn(macros)
+
 lazy val macros = project
   .settings(commonSettings)
   .settings(
@@ -64,6 +73,7 @@ lazy val macros = project
 lazy val examples = project
   .settings(commonSettings: _*)
   .dependsOn(serverAkkaHttp)
+  .dependsOn(clientAkkaHttp)
 
 lazy val docs = project
   .enablePlugins(MicrositesPlugin)
