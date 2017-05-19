@@ -78,9 +78,9 @@ object Client extends App with ClientDerivationMacro {
   val doghouseClient = deriveClientContext[DoghouseApi]
   val rpcClient = new RPCClient(config, doghouseClient)
 
-  rpcClient[DoghouseApi].getPuppy(1).call() map { a =>
-    println(a)
-  }
+  val res = rpcClient[DoghouseApi].getPuppy(1).call()
+
+  res map (println(_))
 }
 
 object Server extends App with RouterDerivationMacro {
