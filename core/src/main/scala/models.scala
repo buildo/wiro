@@ -3,12 +3,7 @@ package wiro
 import io.circe._
 
 package object models {
-  case class ClientConfig(
-    host: String,
-    port: Int
-  )
-
-  case class ServerConfig(
+  case class Config(
     host: String,
     port: Int
   )
