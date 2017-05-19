@@ -9,12 +9,12 @@ import akka.http.scaladsl.server.{ StandardRoute, Route }
 
 import scala.io.StdIn
 
-import wiro.models.ServerConfig
+import wiro.models.Config
 import wiro.server.akkaHttp.RouteGenerators._
 import wiro.server.akkaHttp.RouteGenerators.BoxingSupport._
 
 class HttpRPCServer(
-  config: ServerConfig,
+  config: Config,
   controllers: List[GeneratorBox[_]],
   customRoute: Route = reject
 )(implicit
