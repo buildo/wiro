@@ -92,13 +92,10 @@ object RouteGenerators {
   }
 
   def commandArgs(request: Json, token: Option[String]): Map[String, Json] =
-    request.as[Map[String, Json]].right.get
-      .withToken(token)
+    request.as[Map[String, Json]].right.get.withToken(token)
 
-  def queryArgs(params: Map[String, String], token: Option[String]): Map[String, Json] = {
-    params.map { case (k, v) => (k -> v.asJson) }
-      .withToken(token)
-  }
+  def queryArgs(params: Map[String, String], token: Option[String]): Map[String, Json] =
+    params.mapValues(_.asJson).withToken(token)
 
   implicit class PimpMyMap(m: Map[String, Json]) {
     def withToken(token: Option[String]): Map[String, Json] = token match {
