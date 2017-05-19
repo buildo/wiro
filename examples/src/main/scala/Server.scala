@@ -1,56 +1,21 @@
 package wiro.apps
 
+import wiro.client._
+
 import scala.concurrent.Future
 import wiro.server.akkaHttp._
-import wiro.models.ServerConfig
+import wiro.models.Config
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
+import akka.http.scaladsl.model.{ HttpResponse, StatusCodes, ContentType, HttpEntity}
+import akka.http.scaladsl.model.MediaTypes
 
 import wiro.server.akkaHttp.RouteGenerators._
 
 import io.circe.generic.auto._
-
-object errors {
-  import FailSupport._
-  import controllers.Nope
-
-  import io.circe.syntax._
-  implicit def nopeToResponse = new ToHttpResponse[Nope] {
-    def response(error: Nope) = HttpResponse(
-      status = StatusCodes.UnprocessableEntity,
-      entity = error.asJson.noSpaces
-    )
-  }
-}
-
-object Server extends App with RouterDerivationMacro {
-  import controllers._
-  import wiro.reflect._
-  import models._
-  import errors._
-  import FailSupport._
-
-  val doghouseApi = new DoghouseApiImpl: DoghouseApi
-
-  implicit def DoghouseRouter = deriveRouter[DoghouseApi](doghouseApi)
-
-  implicit val system = ActorSystem()
-  implicit val materializer = ActorMaterializer()
-
-  val rpcServer = new HttpRPCServer(
-    config = ServerConfig("localhost", 8080),
-    controllers = List(doghouseApi)
-  )
-}
-
-object models {
-  case class Dog(name: String)
-  case class Kitten(name: String)
-}
 
 object controllers {
   import models._
@@ -85,4 +50,72 @@ object controllers {
       Nope("Not doing that")
     })
   }
+}
+
+object errors {
+  import FailSupport._
+  import controllers.Nope
+
+  import io.circe.syntax._
+  implicit def nopeToResponse = new ToHttpResponse[Nope] {
+    def response(error: Nope) = HttpResponse(
+      status = StatusCodes.UnprocessableEntity,
+      entity = HttpEntity(ContentType(MediaTypes.`application/json`), error.asJson.noSpaces)
+    )
+  }
+}
+
+object Client extends App with PathMacro with MetaDataMacro {
+  import controllers._
+  import autowire._
+  import wiro.reflect._
+
+  val config = Config("localhost", 8080)
+
+  implicit val system = ActorSystem()
+  implicit val materializer = ActorMaterializer()
+
+  val doghouseClient = new RPCClientContext[DoghouseApi] {
+    override val methodsMetaData = deriveMetaData[DoghouseApi]
+    override val tp = typePath[DoghouseApi]
+    override val path = derivePath[DoghouseApi]
+  }
+
+  val rpcClient = new RPCClient(config, doghouseClient)
+
+  rpcClient[DoghouseApi].getPuppy(1).call() map { a =>
+    println("ASDSDASDDSDADSDADSADADAS")
+    println(a)
+  }
+
+  Thread sleep (100)
+}
+
+object Server extends App with RouterDerivationMacro with MetaDataMacro {
+  import controllers._
+  import wiro.reflect._
+  import models._
+  import errors._
+  import FailSupport._
+
+  val doghouseApi = new DoghouseApiImpl: DoghouseApi
+  implicit def DoghouseRouter = new RouteGenerator[DoghouseApi] {
+    override val routes = route[DoghouseApi](doghouseApi)
+    override val methodsMetaData = deriveMetaData[DoghouseApi]
+    override val tp = typePath[DoghouseApi]
+    override val path = derivePath[DoghouseApi]
+  }
+
+  implicit val system = ActorSystem()
+  implicit val materializer = ActorMaterializer()
+
+  val rpcServer = new HttpRPCServer(
+    config = Config("localhost", 8080),
+    controllers = List(doghouseApi)
+  )
+}
+
+object models {
+  case class Dog(name: String)
+  case class Kitten(name: String)
 }
