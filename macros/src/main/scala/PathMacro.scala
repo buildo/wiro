@@ -18,9 +18,8 @@ object PathMacro extends PathMacro {
     tpe.annotations.collectFirst {
       case pathAnnotation if pathAnnotation.tpe <:< c.weakTypeOf[path] =>
         pathAnnotation.tree.children.tail.head
-    }.headOption match {
-      case Some(name) => name
-      case None => c.abort(c.enclosingPosition, s"\n\nMissing annotation @path(<name>) on $tpe\n")
+    }.getOrElse {
+      c.abort(c.enclosingPosition, s"\n\nMissing annotation @path(<name>) on $tpe\n")
     }
 
   }
