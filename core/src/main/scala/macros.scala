@@ -2,24 +2,21 @@ package wiro.server.akkaHttp
 
 import scala.reflect.macros.blackbox.Context
 import scala.language.experimental.macros
-
-case class command(name: Option[String] = None) extends scala.annotation.StaticAnnotation
-case class query(name: Option[String] = None) extends scala.annotation.StaticAnnotation
-case class auth(authenticationType: AuthenticationType) extends scala.annotation.StaticAnnotation
+import wiro.annotation.{ command, query, auth }
 
 sealed trait OperationType {
   def name: Option[String]
-}
-
-object OperationType {
-  case class Command(name: Option[String]) extends OperationType
-  case class Query(name: Option[String]) extends OperationType
 }
 
 sealed trait AuthenticationType
 object AuthenticationType {
   case object Nope extends AuthenticationType
   case object Token extends AuthenticationType
+}
+
+object OperationType {
+  case class Command(name: Option[String]) extends OperationType
+  case class Query(name: Option[String]) extends OperationType
 }
 
 case class MethodMetaData(
