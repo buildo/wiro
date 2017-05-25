@@ -3,7 +3,7 @@ package wiro.apps
 import wiro.client._
 
 import scala.concurrent.Future
-import wiro.server.akkaHttp._
+import wiro.server.akkaHttp.{ RouterDerivationModule, ToHttpResponse, FailSupport, HttpRPCServer }
 import wiro.models.Config
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -65,7 +65,7 @@ object errors {
   }
 }
 
-object Client extends App with ClientDerivationMacro {
+object Client extends App with ClientDerivationModule {
   import controllers._
   import autowire._
   import wiro.reflect._
@@ -83,7 +83,7 @@ object Client extends App with ClientDerivationMacro {
   res map (println(_))
 }
 
-object Server extends App with RouterDerivationMacro {
+object Server extends App with RouterDerivationModule {
   import controllers._
   import wiro.reflect._
   import models._
