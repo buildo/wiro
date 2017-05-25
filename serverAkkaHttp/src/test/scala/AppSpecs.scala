@@ -39,7 +39,27 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
 
         Post("/user/update", jsonEntity(data)) ~> userRouter.buildRoute ~> check {
           status should be (OK)
-          responseAs[Ok] should be (Ok("happy update"))
+          responseAs[Ok] should be (Ok("update"))
+        }
+      }
+    }
+
+    "points to route that includes the name of another route" should {
+      "invoke the correct path" in {
+        val data = ByteString(
+          s"""
+             |{
+             |    "id": 1,
+             |    "user": {
+             |        "id": 1,
+             |        "username": "foo"
+             |    }
+             |}
+          """.stripMargin)
+
+        Post("/user/updateCommand", jsonEntity(data)) ~> userRouter.buildRoute ~> check {
+          status should be (OK)
+          responseAs[Ok] should be (Ok("updateCommand"))
         }
       }
     }
@@ -122,19 +142,19 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
     "HTTP method is wrong" should {
       "return method is missing when GET" in {
         Get("/user/update?id=1") ~> userRouter.buildRoute ~> check {
-          rejections shouldEqual Nil
+          rejections shouldEqual List(MethodRejection(POST))
         }
       }
 
       "return method is missing when DELETE" in {
         Delete("/user/update?id=1") ~> userRouter.buildRoute ~> check {
-          rejections shouldEqual List(MethodRejection(POST), MethodRejection(GET))
+          rejections shouldEqual List(MethodRejection(POST))
         }
       }
 
       "return method is missing when PUT" in {
         Put("/user/update?id=1") ~> userRouter.buildRoute ~> check {
-          rejections shouldEqual List(MethodRejection(POST), MethodRejection(GET))
+          rejections shouldEqual List(MethodRejection(POST))
         }
       }
     }
@@ -161,16 +181,25 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
   "A GET request" when {
     "it's right" should {
       "return 200 and content" in {
-        Get("/user/find?id=1") ~> userRouter.buildRoute ~> check {
+        Get("/user/read?id=1") ~> userRouter.buildRoute ~> check {
           status should be (OK)
-          responseAs[User] should be (User(1, "foo"))
+          responseAs[User] should be (User(1, "read"))
+        }
+      }
+    }
+
+    "points to route that includes the name of another route" should {
+      "invoke the correct path" in {
+        Get("/user/readQuery?id=1") ~> userRouter.buildRoute ~> check {
+          status should be (OK)
+          responseAs[User] should be (User(1, "readQuery"))
         }
       }
     }
 
     "it's left" should {
       "return provided error" in {
-        Get("/user/find?id=2") ~> userRouter.buildRoute ~> check {
+        Get("/user/read?id=2") ~> userRouter.buildRoute ~> check {
           status should be (NotFound)
         }
       }
@@ -193,27 +222,27 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
              |}
           """.stripMargin)
 
-        Post("/user/find", jsonEntity(data)) ~> userRouter.buildRoute ~> check {
-          rejections shouldEqual Nil
+        Post("/user/read", jsonEntity(data)) ~> userRouter.buildRoute ~> check {
+          rejections shouldEqual List(MethodRejection(GET))
         }
       }
 
       "return method is missing when DELETE" in {
-        Delete("/user/find") ~> userRouter.buildRoute ~> check {
-          rejections shouldEqual List(MethodRejection(POST), MethodRejection(GET))
+        Delete("/user/read") ~> userRouter.buildRoute ~> check {
+          rejections shouldEqual List(MethodRejection(GET))
         }
       }
 
       "return method is missing when PUT" in {
-        Put("/user/find") ~> userRouter.buildRoute ~> check {
-          rejections shouldEqual List(MethodRejection(POST), MethodRejection(GET))
+        Put("/user/read") ~> userRouter.buildRoute ~> check {
+          rejections shouldEqual List(MethodRejection(GET))
         }
       }
     }
 
     "operation doesn't exist" should {
       "return be rejected" in {
-        Get("/user/fin") ~> userRouter.buildRoute ~> check {
+        Get("/user/rea") ~> userRouter.buildRoute ~> check {
           rejections shouldEqual Nil
         }
       }
