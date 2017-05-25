@@ -6,11 +6,11 @@ import wiro.annotation.path
 
 import RouteGenerators._
 
-trait RouterDerivationMacro {
+trait RouterDerivationModule {
   def deriveRouter[A](a: A): RouteGenerator[A] = macro RouterDerivationMacro.deriveRouterImpl[A]
 }
 
-object RouterDerivationMacro extends RouterDerivationMacro {
+object RouterDerivationMacro extends RouterDerivationModule {
   def deriveRouterImpl[A: c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Tree = {
     import c.universe._
     val tpe = weakTypeOf[A]
@@ -26,6 +26,8 @@ object RouterDerivationMacro extends RouterDerivationMacro {
     }
 
     q"""
+    import wiro.server.akkaHttp.{ OperationType, AuthenticationType, MethodMetaData }
+
     new RouteGenerator[$tpe] {
       override val routes = route[$tpe]($a)
       override val methodsMetaData = deriveMetaData[$tpe]

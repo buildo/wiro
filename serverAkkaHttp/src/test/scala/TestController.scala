@@ -13,7 +13,7 @@ import wiro.server.akkaHttp._
 import wiro.server.akkaHttp.FailSupport._
 import wiro.server.akkaHttp.RouteGenerators._
 
-object TestController extends RouterDerivationMacro {
+object TestController extends RouterDerivationModule {
   case class UserNotFound(userId: Int)
   case class Conflict(userId: Int)
   case object GenericError
