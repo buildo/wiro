@@ -14,8 +14,7 @@ import scala.language.implicitConversions
 import scala.util.{ Try, Success, Failure }
 import scala.concurrent.Future
 
-import io.circe._
-import io.circe.syntax._
+import io.circe.Json
 
 object RouteGenerators {
   def exceptionHandler = ExceptionHandler {
@@ -58,7 +57,7 @@ object RouteGenerators {
       }
 
     private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route = {
-      (get & pathPrefix(operationName(operationFullName, methodMetaData)) & parameterMap) { params =>
+      (pathPrefix(operationName(operationFullName, methodMetaData)) & pathEnd & get & parameterMap) { params =>
         requestToken { token =>
           val appliedRequest = Try(routes(autowire.Core.Request(
             path = operationFullName.split("""\."""),
@@ -75,7 +74,8 @@ object RouteGenerators {
 
     //Generates POST requests
     private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route = {
-      (post & pathPrefix(operationName(operationFullName, methodMetaData)) & entity(as[Json])) { request =>
+      val name: String = operationName(operationFullName, methodMetaData)
+      (pathPrefix(name) & pathEnd & post & entity(as[Json])) { request =>
         requestToken { token =>
           val appliedRequest = Try(routes(autowire.Core.Request(
             path = operationFullName.split("""\."""),
@@ -94,8 +94,10 @@ object RouteGenerators {
   def commandArgs(request: Json, token: Option[String]): Map[String, Json] =
     request.as[Map[String, Json]].right.get.withToken(token)
 
-  def queryArgs(params: Map[String, String], token: Option[String]): Map[String, Json] =
+  def queryArgs(params: Map[String, String], token: Option[String]): Map[String, Json] = {
+    import io.circe.syntax._
     params.mapValues(_.asJson).withToken(token)
+  }
 
   implicit class PimpMyMap(m: Map[String, Json]) {
     def withToken(token: Option[String]): Map[String, Json] = token match {

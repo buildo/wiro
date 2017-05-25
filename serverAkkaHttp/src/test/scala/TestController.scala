@@ -48,8 +48,14 @@ object TestController extends RouterDerivationModule {
     @command
     def update(id: Int, user: User): Future[Either[UserNotFound, Ok]]
 
+    @command
+    def updateCommand(id: Int, user: User): Future[Either[UserNotFound, Ok]]
+
     @query
-    def find(id: Int): Future[Either[UserNotFound, User]]
+    def read(id: Int): Future[Either[UserNotFound, User]]
+
+    @query
+    def readQuery(id: Int): Future[Either[UserNotFound, User]]
 
     @command(name = Some("insert"))
     def insertUser(id: Int, user: User): Future[Either[Conflict, Ok]]
@@ -62,12 +68,22 @@ object TestController extends RouterDerivationModule {
     ec: ExecutionContext
   ) extends UserController {
     def update(id: Int, user: User): Future[Either[UserNotFound, Ok]] = Future {
-      if (id == 1) Right(Ok("happy update"))
+      if (id == 1) Right(Ok("update"))
       else Left(UserNotFound(id))
     }
 
-    def find(id: Int): Future[Either[UserNotFound, User]] = Future {
-      if (id == 1) Right(User(id, "foo"))
+    def updateCommand(id: Int, user: User): Future[Either[UserNotFound, Ok]] = Future {
+      if (id == 1) Right(Ok("updateCommand"))
+      else Left(UserNotFound(id))
+    }
+
+    def read(id: Int): Future[Either[UserNotFound, User]] = Future {
+      if (id == 1) Right(User(id, "read"))
+      else Left(UserNotFound(id))
+    }
+
+    def readQuery(id: Int): Future[Either[UserNotFound, User]] = Future {
+      if (id == 1) Right(User(id, "readQuery"))
       else Left(UserNotFound(id))
     }
 

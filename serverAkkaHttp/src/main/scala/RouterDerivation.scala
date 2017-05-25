@@ -6,7 +6,7 @@ import wiro.annotation.path
 
 import RouteGenerators._
 
-trait RouterDerivationModule {
+trait RouterDerivationModule extends PathMacro with MetaDataMacro {
   def deriveRouter[A](a: A): RouteGenerator[A] = macro RouterDerivationMacro.deriveRouterImpl[A]
 }
 
