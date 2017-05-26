@@ -16,7 +16,23 @@ import scala.concurrent.Future
 
 import io.circe.Json
 
-object RouteGenerators {
+trait Router extends RPCServer with PathMacro with MetaDataMacro {
+  def tp: Seq[String]
+  def methodsMetaData: Map[String, MethodMetaData]
+  def routes: autowire.Core.Router[Json]
+  def path: String = tp.last
+
+  def buildRoute: Route = handleExceptions(exceptionHandler) {
+    pathPrefix(path) {
+      methodsMetaData map { case (k, v) =>
+        v.operationType match {
+          case _: OperationType.Command => command(k, v)
+          case _: OperationType.Query => query(k, v)
+        }
+      } reduce (_ ~ _)
+    }
+  }
+
   def exceptionHandler = ExceptionHandler {
     case f@FailException(_) => complete(f.response)
   }
@@ -33,59 +49,41 @@ object RouteGenerators {
     authDirective.recover { x => provide(None) }
   }
 
-  //TODO Don't necessarily need the type here, it can be simplified (no boxing)
-  trait RouteGenerator[A] extends RPCController with PathMacro with MetaDataMacro {
-    def routes: autowire.Core.Router[Json]
-    //complete path of the trait implementation, required by autowire to locate the method
-    def tp: Seq[String]
-    def methodsMetaData: Map[String, MethodMetaData]
-    def buildRoute: Route = handleExceptions(exceptionHandler) {
-      pathPrefix(path) {
-        methodsMetaData map { case (k, v) =>
-          v.operationType match {
-            case _: OperationType.Command => command(k, v)
-            case _: OperationType.Query => query(k, v)
-          }
-        } reduce (_ ~ _)
-      }
+  private[this] def operationName(operationFullName: String, methodMetaData: MethodMetaData): String =
+    methodMetaData.operationType.name match {
+      case Some(n) => n
+      case None => operationFullName.split("""\.""").last
     }
 
-    private[this] def operationName(operationFullName: String, methodMetaData: MethodMetaData): String =
-      methodMetaData.operationType.name match {
-        case Some(n) => n
-        case None => operationFullName.split("""\.""").last
-      }
+  private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route = {
+    (pathPrefix(operationName(operationFullName, methodMetaData)) & pathEnd & get & parameterMap) { params =>
+      requestToken { token =>
+        val appliedRequest = Try(routes(autowire.Core.Request(
+          path = operationFullName.split("""\."""),
+          args = queryArgs(params, token)
+        )))
 
-    private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route = {
-      (pathPrefix(operationName(operationFullName, methodMetaData)) & pathEnd & get & parameterMap) { params =>
-        requestToken { token =>
-          val appliedRequest = Try(routes(autowire.Core.Request(
-            path = operationFullName.split("""\."""),
-            args = queryArgs(params, token)
-          )))
-
-          appliedRequest match {
-            case Success(res) => complete(res)
-            case Failure(f) => handleUnwrapErrors(f)
-          }
+        appliedRequest match {
+          case Success(res) => complete(res)
+          case Failure(f) => handleUnwrapErrors(f)
         }
       }
     }
+  }
 
-    //Generates POST requests
-    private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route = {
-      val name: String = operationName(operationFullName, methodMetaData)
+  //Generates POST requests
+  private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route = {
+    val name: String = operationName(operationFullName, methodMetaData)
       (pathPrefix(name) & pathEnd & post & entity(as[Json])) { request =>
-        requestToken { token =>
-          val appliedRequest = Try(routes(autowire.Core.Request(
-            path = operationFullName.split("""\."""),
-            args = commandArgs(request, token)
-          )))
+      requestToken { token =>
+        val appliedRequest = Try(routes(autowire.Core.Request(
+          path = operationFullName.split("""\."""),
+          args = commandArgs(request, token)
+        )))
 
-          appliedRequest match {
-            case Success(res) => complete(res)
-            case Failure(f) => handleUnwrapErrors(f)
-          }
+        appliedRequest match {
+          case Success(res) => complete(res)
+          case Failure(f) => handleUnwrapErrors(f)
         }
       }
     }
@@ -104,15 +102,5 @@ object RouteGenerators {
       case Some(t) => m + ("token" -> Json.fromString(t))
       case None => m
     }
-  }
-
-  object BoxingSupport {
-    //Pattern to use existentially quantified types in scala
-    case class GeneratorBox[A: RouteGenerator](a: A) {
-      def routify = implicitly[RouteGenerator[A]].buildRoute
-    }
-
-    implicit def boxer[A: RouteGenerator](a: A) =
-      new GeneratorBox[A](a)
   }
 }

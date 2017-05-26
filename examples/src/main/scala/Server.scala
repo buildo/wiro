@@ -13,8 +13,6 @@ import akka.stream.ActorMaterializer
 import akka.http.scaladsl.model.{ HttpResponse, StatusCodes, ContentType, HttpEntity}
 import akka.http.scaladsl.model.MediaTypes
 
-import wiro.server.akkaHttp.RouteGenerators._
-
 import io.circe.generic.auto._
 
 object controllers {
@@ -90,15 +88,15 @@ object Server extends App with RouterDerivationModule {
   import errors._
   import FailSupport._
 
-  val doghouseApi = new DoghouseApiImpl: DoghouseApi
-  implicit def DoghouseRouter = deriveRouter[DoghouseApi](doghouseApi)
+  val doghouseApi = new DoghouseApiImpl
+  val doghouseRouter = deriveRouter[DoghouseApi](doghouseApi)
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
 
   val rpcServer = new HttpRPCServer(
     config = Config("localhost", 8080),
-    controllers = List(doghouseApi)
+    routers = List(doghouseRouter)
   )
 }
 
