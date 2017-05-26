@@ -88,8 +88,7 @@ object Server extends App with RouterDerivationModule {
   import errors._
   import FailSupport._
 
-  val doghouseApi = new DoghouseApiImpl
-  val doghouseRouter = deriveRouter[DoghouseApi](doghouseApi)
+  val doghouseRouter = deriveRouter[DoghouseApi](new DoghouseApiImpl)
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()

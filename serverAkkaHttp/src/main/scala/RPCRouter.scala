@@ -24,11 +24,9 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
 
   def buildRoute: Route = handleExceptions(exceptionHandler) {
     pathPrefix(path) {
-      methodsMetaData map { case (k, v) =>
-        v.operationType match {
-          case _: OperationType.Command => command(k, v)
-          case _: OperationType.Query => query(k, v)
-        }
+      methodsMetaData map {
+        case (k, v @ MethodMetaData(OperationType.Command(_), _)) => command(k, v)
+        case (k, v @ MethodMetaData(OperationType.Query(_), _))   => query(k, v)
       } reduce (_ ~ _)
     }
   }
@@ -50,10 +48,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   }
 
   private[this] def operationName(operationFullName: String, methodMetaData: MethodMetaData): String =
-    methodMetaData.operationType.name match {
-      case Some(n) => n
-      case None => operationFullName.split("""\.""").last
-    }
+    methodMetaData.operationType.name.getOrElse(operationFullName.split("""\.""").last)
 
   private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route = {
     (pathPrefix(operationName(operationFullName, methodMetaData)) & pathEnd & get & parameterMap) { params =>
@@ -73,8 +68,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
 
   //Generates POST requests
   private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route = {
-    val name: String = operationName(operationFullName, methodMetaData)
-      (pathPrefix(name) & pathEnd & post & entity(as[Json])) { request =>
+    (pathPrefix(operationName(operationFullName, methodMetaData)) & pathEnd & post & entity(as[Json])) { request =>
       requestToken { token =>
         val appliedRequest = Try(routes(autowire.Core.Request(
           path = operationFullName.split("""\."""),
