@@ -5,7 +5,6 @@ import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 import io.circe.generic.auto._
 
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.concurrent.ExecutionContext.Implicits.global
 
 import wiro.annotation._
 import wiro.reflect._
@@ -95,6 +94,7 @@ object TestController extends RouterDerivationModule {
     }
   }
 
-  private[this] val userController = new UserControllerImpl()
+  import scala.concurrent.ExecutionContext.Implicits.global
+  private[this] val userController = new UserControllerImpl
   def userRouter = deriveRouter[UserController](userController)
 }
