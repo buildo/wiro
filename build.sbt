@@ -25,11 +25,14 @@ val commonDependencies = Seq(
   scalaTest
 ) ++ circeDependencies
 
+val baseScalaVersion = "2.11.11"
+scalaVersion in ThisBuild := baseScalaVersion
+
 lazy val commonSettings = Seq(
   bintrayOrganization := Some("buildo"),
   organization := "io.buildo",
   licenses += ("MIT", url("https://github.com/buildo/wiro/blob/master/LICENSE")),
-  scalaVersion := "2.11.8",
+  scalaVersion := baseScalaVersion,
   crossScalaVersions := Seq("2.11.8", "2.12.1"),
   libraryDependencies :=
     commonDependencies :+
@@ -37,6 +40,10 @@ lazy val commonSettings = Seq(
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
   scalacOptions += "-Xplugin-require:macroparadise"
 )
+
+lazy val publisher = Project(
+  id = "publisher",
+  base = file(".")) aggregate(core, macros, clientAkkaHttp, serverAkkaHttp)
 
 lazy val core = project
   .settings(commonSettings: _*)
@@ -84,7 +91,7 @@ lazy val docs = project
   .dependsOn(serverAkkaHttp, examples)
 
 lazy val docSettings = Seq(
-  scalaVersion := "2.11.8",
+  scalaVersion := baseScalaVersion,
   crossScalaVersions := Seq("2.11.8", "2.12.1"),
   micrositeName := "wiro",
   micrositeDescription := "Lightweight RPC-Http Scala library",
