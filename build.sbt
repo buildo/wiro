@@ -35,8 +35,21 @@ lazy val commonSettings = Seq(
     commonDependencies :+
     scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided",
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
-  scalacOptions += "-Xplugin-require:macroparadise"
+  scalacOptions += "-Xplugin-require:macroparadise",
+  releaseCrossBuild := true
 )
+
+lazy val noPublishSettings = Seq(
+  publish := (),
+  publishLocal := (),
+  publishArtifact := false
+)
+
+lazy val root = project.in(file("."))
+  .settings(commonSettings)
+  .settings(noPublishSettings)
+  .aggregate(core, serverAkkaHttp, clientAkkaHttp, macros)
+  .dependsOn(core, serverAkkaHttp, clientAkkaHttp, macros)
 
 lazy val core = project
   .settings(commonSettings: _*)
