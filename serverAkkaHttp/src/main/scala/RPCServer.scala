@@ -10,12 +10,11 @@ import akka.http.scaladsl.server.{ StandardRoute, Route }
 import scala.io.StdIn
 
 import wiro.models.Config
-import wiro.server.akkaHttp.RouteGenerators._
-import wiro.server.akkaHttp.RouteGenerators.BoxingSupport._
+import wiro.server.akkaHttp.{ Router => WiroRouter }
 
 class HttpRPCServer(
   config: Config,
-  controllers: List[GeneratorBox[_]],
+  routers: List[WiroRouter],
   customRoute: Route = reject
 )(implicit
   system: ActorSystem,
@@ -23,8 +22,8 @@ class HttpRPCServer(
 ) {
   import system.dispatcher
 
-  val route = controllers
-    .map(_.routify)
+  val route = routers
+    .map(_.buildRoute)
     .foldLeft(customRoute) (_ ~ _)
 
   val bindingFuture = Http().bindAndHandle(route, config.host, config.port)

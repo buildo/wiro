@@ -11,7 +11,6 @@ import wiro.annotation._
 import wiro.reflect._
 import wiro.server.akkaHttp._
 import wiro.server.akkaHttp.FailSupport._
-import wiro.server.akkaHttp.RouteGenerators._
 
 object TestController extends RouterDerivationModule {
   case class UserNotFound(userId: Int)
@@ -96,6 +95,6 @@ object TestController extends RouterDerivationModule {
     }
   }
 
-  private[this] val userController = new UserControllerImpl(): UserController
+  private[this] val userController = new UserControllerImpl()
   def userRouter = deriveRouter[UserController](userController)
 }

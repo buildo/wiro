@@ -4,10 +4,8 @@ import scala.reflect.macros.blackbox.Context
 import scala.language.experimental.macros
 import wiro.annotation.path
 
-import RouteGenerators._
-
 trait RouterDerivationModule extends PathMacro with MetaDataMacro {
-  def deriveRouter[A](a: A): RouteGenerator[A] = macro RouterDerivationMacro.deriveRouterImpl[A]
+  def deriveRouter[A](a: A): Router = macro RouterDerivationMacro.deriveRouterImpl[A]
 }
 
 object RouterDerivationMacro extends RouterDerivationModule {
@@ -26,9 +24,9 @@ object RouterDerivationMacro extends RouterDerivationModule {
     }
 
     q"""
-    import wiro.server.akkaHttp.{ OperationType, AuthenticationType, MethodMetaData }
+    import wiro.server.akkaHttp.{ OperationType, AuthenticationType, MethodMetaData, Router }
 
-    new RouteGenerator[$tpe] {
+    new Router {
       override val routes = route[$tpe]($a)
       override val methodsMetaData = deriveMetaData[$tpe]
       override val tp = typePath[$tpe]
