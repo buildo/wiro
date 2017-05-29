@@ -4,7 +4,7 @@ title:  "Home"
 section: "home"
 ---
 
-[ ![Download](https://api.bintray.com/packages/buildo/maven/wiro-http-server/images/download.svg) ](https://bintray.com/buildo/maven/wiro-http-server/_latestVersion)
+[![Download](https://api.bintray.com/packages/buildo/maven/wiro-http-server/images/download.svg)](https://bintray.com/buildo/maven/wiro-http-server/_latestVersion)
 [![Build Status](https://drone.our.buildo.io/api/badges/buildo/wiro/status.svg)](https://drone.our.buildo.io/buildo/wiro)
 
 <a name="getting-started"></a>
@@ -23,103 +23,143 @@ Wiro exposes controllers' operations using HTTP as a transport protocol.
 
 This is sometimes referred to as *WYGOPIAO*: What You GET Or POST Is An Operation, and it's closly related to RPC.
 
-## Example
-
-You can find a complete example project at https://github.com/buildo/wiro-example.
+## Server Example
 
 ```scala
-//models
-case class NotFound(userId: Int)
-case class User(id: Int, username: String)
+import scala.concurrent.Future
 
-//defines how to serialize an error
-import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
-import wiro.server.akkaHttp.FailSupport._
-import wiro.server.akkaHttp.ToHttpResponse
+import wiro.server.akkaHttp.{ RouterDerivationModule, ToHttpResponse, FailSupport, HttpRPCServer }
+import wiro.models.Config
 
-implicit def notFoundToResponse: ToHttpResponse[NotFound] = error => HttpResponse(
-    status = StatusCodes.NotFound,
-    entity = s"User not found: ${error.userId}"
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import akka.http.scaladsl.model.{ HttpResponse, StatusCodes, ContentType, HttpEntity}
+import akka.http.scaladsl.model.MediaTypes
+
+import io.circe.generic.auto._
+
+object models {
+  case class Dog(name: String)
+  case class Kitten(name: String)
+}
+
+object controllers {
+  import models._
+  import wiro.annotation._
+  import FailSupport._
+
+  case class Nope(msg: String)
+  case class Wa(lol: String, bah: Int, dah: Int)
+
+  // Controller interface
+  @path("woff")
+  trait DoghouseApi {
+    @command(name = Some("puppy"))
+    def getPuppy(
+      wa: Int
+    ): Future[Either[Nope, Dog]]
+
+    @command(name = Some("pallino"))
+    def getPallino(
+      something: String
+    ): Future[Either[Nope, Dog]]
+  }
+
+  // Controller implementation
+  class DoghouseApiImpl() extends DoghouseApi {
+    override def getPallino(
+      something: String
+    ): Future[Either[Nope, Dog]] = Future(Right(Dog("pallino")))
+
+    override def getPuppy(
+      wa: Int
+    ): Future[Either[Nope, Dog]] = Future(Left{
+      println(wa)
+      Nope("Not doing that")
+    })
+  }
+}
+
+object errors {
+  import FailSupport._
+  import controllers.Nope
+
+  import io.circe.syntax._
+  implicit def nopeToResponse = new ToHttpResponse[Nope] {
+    def response(error: Nope) = HttpResponse(
+      status = StatusCodes.UnprocessableEntity,
+      entity = HttpEntity(ContentType(MediaTypes.`application/json`), error.asJson.noSpaces)
+    )
+  }
+}
+
+// Creating the wiro server
+object Server extends App with RouterDerivationModule {
+  import controllers._
+  import wiro.reflect._
+  import models._
+  import errors._
+  import FailSupport._
+
+  val doghouseRouter = deriveRouter[DoghouseApi](new DoghouseApiImpl)
+
+  implicit val system = ActorSystem()
+  implicit val materializer = ActorMaterializer()
+
+  val rpcServer = new HttpRPCServer(
+    config = Config("localhost", 8080),
+    routers = List(doghouseRouter)
   )
-  
-//controllers interface and implementation
-
-trait UserController {
-  @command
-  def update(id: Int, user: User): Future[Either[NotFound, Ok]]
-
-  @query
-  def find(id: Int): Future[Either[NotFound, User]]
 }
-
-class UserControllerImpl(implicit
-  ec: ExecutionContext
-) extends UserController {
-  @command
-  def update(id: Int, user: User): Future[Either[NotFound, Ok]] = Future { Right(Ok("happy update")) }
-
-  @query
-  def find(id: Int): Future[Either[NotFound, User]] = Future { NotFound(id) }
-}
-
-val userController = new UserControllerImpl(): UserController
-
-implicit def UserRouter = new RouteGenerator[UserController] {
-  val routes = route[UserController](userController)
-  val tp = typePath[UserController]
-}
-
-val rpcServer = new HttpRPCServer(
-  config = ServerConfig("localhost", 8080),
-  controllers = List(userController)
-)
 ```
 
 ## Requests Examples
 
-Update user:
+Pallino:
 
 ```bash
-curl -XPOST 'http://localhost:8080/UserController/update' \
--d '{"user": {"id": 3, "username": "Babo"}, "id": 2}' \
+curl -XPOST 'http://localhost:8080/woff/pallino' \
+-d '{"something":"foo"}' \
 -H "Content-Type: application/json"
 ```
-`>> {"msg":"happy update"}`
+`>> {"name":"pallino"}`
 
-Find user:
+Puppy:
 
 ```bash
-curl 'http://localhost:8080/UserController/find?id=3'
+curl -XPOST 'http://localhost:8080/woff/puppy' \
+-d '{"wa":"1"}' \
+-H "Content-Type: application/json"
 ```
 
-`>> {"id":1,"username":"Pippo"}`
+`>> {"msg":"Not doing that"}`
 
-## Specifying the controller path
-By default wiro uses the controller name in the generated path, as in `/UserController/find`.
+## Client Example
 
-You can override this default by annotating the UserController with `@path`:
+Add the following code:
 
 ```scala
-import wiro.annotation.path
+import wiro.client._
 
-@path("custom")
-trait UserController {
-  // ...
+object Client extends App with ClientDerivationModule {
+  import controllers._
+  import autowire._
+  import wiro.reflect._
+
+  val config = Config("localhost", 8080)
+
+  implicit val system = ActorSystem()
+  implicit val materializer = ActorMaterializer()
+
+  val doghouseClient = deriveClientContext[DoghouseApi]
+  val rpcClient = new RPCClient(config, doghouseClient)
+
+  val res = rpcClient[DoghouseApi].getPuppy(1).call()
+
+  res map (println(_))
 }
 ```
 
-then overriding the `path` field in the `RouteGenerator` definition:
-
-```scala
-implicit def UserRouter = new RouteGenerator[UserController] {
-  val routes = route[UserController](userController)
-  val tp = typePath[UserController]
-  override val path = derivePath[UserController]
-}
-```
-
-Try this out:
-
-```bash
-curl 'http://localhost:8080/custom/find?id=3'
-```
+You can the run this Client App to interact with the server defined above.
