@@ -13,7 +13,7 @@ operations:
 The following snippet defines a model for `User` and an interface that follows this specification.
 
 ```scala
-// Model definition
+// Models definition
 object models {
   case class User(name: String)
 }
