@@ -27,4 +27,18 @@ object controllers {
       name: String
     ): Future[Either[Error, User]]
   }
+
+  val users = collection.mutable.Map[Int, User]()
+
+  // API implementation
+  class UsersApiImpl() extends UsersApi {
+    override def getUser(
+      id: Int
+    ): Future[Either[Error, User]] = ???
+
+    override def insertUser(
+      id: Int,
+      name: String
+    ): Future[Either[Error, User]] = ???
+  }
 }
