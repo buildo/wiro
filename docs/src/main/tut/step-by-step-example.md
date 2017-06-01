@@ -31,12 +31,12 @@ object controllers {
   trait UsersApi {
 
     @query(name = Some("getUser"))
-    def getPuppy(
+    def getUser(
       id: Int
     ): Future[Either[Error, Ok]]
 
     @command(name = Some("addUser"))
-    def getPuppy(
+    def insertUser(
       id: Int,
       name: String
     ): Future[Either[Error, User]]
