@@ -22,9 +22,8 @@ object controllers {
   import models._
   import wiro.annotation._
 
-  // Error and success messages
+  // Error message
   case class Error(msg: String)
-  case class Ok(mgs: String)
 
   // API interface
   @path("users")
@@ -33,9 +32,9 @@ object controllers {
     @query(name = Some("getUser"))
     def getUser(
       id: Int
-    ): Future[Either[Error, Ok]]
+    ): Future[Either[Error, User]]
 
-    @command(name = Some("addUser"))
+    @command(name = Some("insertUser"))
     def insertUser(
       id: Int,
       name: String
