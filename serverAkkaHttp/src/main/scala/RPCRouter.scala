@@ -3,7 +3,7 @@ package wiro.server.akkaHttp
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{ Route, Directive1, ExceptionHandler }
 import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
-import de.heikoseeberger.akkahttpcirce.CirceSupport._
+import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
 import wiro.models._
 import FailSupport._
