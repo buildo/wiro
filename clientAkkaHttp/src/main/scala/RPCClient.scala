@@ -14,7 +14,7 @@ import scala.concurrent.{ Future, ExecutionContext }
 
 import io.circe._
 import io.circe.syntax._
-import de.heikoseeberger.akkahttpcirce.CirceSupport._
+import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
 trait RPCClientContext[T] extends MetaDataMacro with PathMacro {
   def methodsMetaData: Map[String, MethodMetaData]
