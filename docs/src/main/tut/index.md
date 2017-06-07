@@ -21,7 +21,7 @@ section: "home"
 We think routes should be a one-to-one mapping with controllers' methods.
 Wiro exposes controllers' operations using HTTP as a transport protocol.
 
-This is sometimes referred to as *WYGOPIAO*: What You GET Or POST Is An Operation, and it's closly related to RPC.
+This is sometimes referred to as *WYGOPIAO*: What You GET Or POST Is An Operation, and it's closely related to RPC.
 
 
 {% include_relative step-by-step-example.md %}
