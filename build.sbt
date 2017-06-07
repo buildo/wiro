@@ -5,7 +5,7 @@ enablePlugins(GitVersioning)
 
 val autowire = "com.lihaoyi" %% "autowire" % "0.2.6"
 val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.3"
-val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.12.0"
+val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.16.0"
 val akkaHttpTestKit = "com.typesafe.akka" %% "akka-http-testkit" % "10.0.3" % "test"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 
@@ -94,6 +94,7 @@ lazy val docs = project
   .settings(ghpages.settings)
   .settings(docSettings)
   .settings(tutScalacOptions ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
+  .settings(libraryDependencies ++= Seq(scalaTest, akkaHttpTestKit, akkaHttpCirce))
   .dependsOn(serverAkkaHttp, examples)
 
 lazy val docSettings = Seq(

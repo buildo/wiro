@@ -14,7 +14,6 @@ The following snippet defines a model for `User` and an interface that follows t
 
 ```tut:silent
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
 // Models definition
 object models {
@@ -58,6 +57,7 @@ inside the `controllers` object:
 ```tut:silent
 object controllers extends ControllersInterfaces {
   import models.User
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   val users = collection.mutable.Map.empty[Int, User] // Users DB
 
@@ -138,10 +138,11 @@ object UsersServer extends App with RouterDerivationModule {
   import models._
   import errors._
 
-  val usersRouter = deriveRouter[UsersApi](new UsersApiImpl)
-
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
+  implicit val ec = system.dispatcher
+
+  val usersRouter = deriveRouter[UsersApi](new UsersApiImpl)
 
   val rpcServer = new HttpRPCServer(
     config = Config("localhost", 8080),
@@ -184,6 +185,7 @@ object UsersClient extends App with ClientDerivationModule {
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
+  implicit val ec = system.dispatcher
 
   val rpcClient = new RPCClient(config, deriveClientContext[UsersApi])
 
@@ -196,7 +198,23 @@ object UsersClient extends App with ClientDerivationModule {
 To write tests for the router you can use the Akka [Route Testkit](http://doc.akka.io/docs/akka-http/current/scala/http/routing-dsl/testkit.html). The router to be tested can be extracted from the object that we defined above, as follows:
 
 ```tut:silent
-lazy val route = UsersServer.usersRouter.buildRoute
+import org.scalatest.{ Matchers, FlatSpec }
+import akka.http.scaladsl.testkit.ScalatestRouteTest
+import models.User
+import io.circe.generic.auto._
+import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
+
+class UserSpec extends FlatSpec with Matchers with ScalatestRouteTest {
+  lazy val route = UsersServer.usersRouter.buildRoute
+
+  it should "get a user" in {
+    Get("/users/getUser?id=0") ~> route ~> check {
+      responseAs[User].name shouldBe "Pippo"
+    }
+  }
+
+}
+
 ```
 
 
