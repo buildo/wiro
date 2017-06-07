@@ -12,7 +12,7 @@ operations:
 
 The following snippet defines a model for `User` and an interface that follows this specification.
 
-```scala
+```tut:silent
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -21,7 +21,7 @@ object models {
   case class User(name: String)
 }
 
-object controllers {
+trait ControllersInterfaces {
   import models._
   import wiro.annotation._
 
@@ -55,7 +55,10 @@ object controllers {
 Now that we have the API interface, we need to implement it. Let's add the following implementation
 inside the `controllers` object:
 
-```scala
+```tut:silent
+object controllers extends ControllersInterfaces {
+  import models.User
+
   val users = collection.mutable.Map.empty[Int, User] // Users DB
 
   // API implementation
@@ -78,21 +81,21 @@ inside the `controllers` object:
       Future(Right(newUser))
     }
   }
+}
 ```
 ### 3 - Serialization and deserialization
 
 Requests and responses composed only by standard types can be serialized and deserialized automatically by [circe](https://github.com/circe/circe), thanks to the following import:
 
-```scala
+```tut:silent
 import io.circe.generic.auto._
 ```
 
 We need, however, to specify how we want the errors that we defined to be converted into HTTP responses. To do it, it is sufficient to define the corresponding implicits, like we do in the following snippet:
 
-```scala
+```tut:silent
 import wiro.server.akkaHttp.ToHttpResponse
-
-import FailSupport._
+import wiro.server.akkaHttp.FailSupport._
 
 import akka.http.scaladsl.model.{ HttpResponse, StatusCodes, ContentType, HttpEntity}
 import akka.http.scaladsl.model.MediaTypes
@@ -122,7 +125,7 @@ object errors {
 
 Now we have everithing we need to instance and star the router:
 
-```scala
+```tut:silent
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 
@@ -170,7 +173,7 @@ curl -XGET 'http://localhost:8080/users/getUser?id=0'
 
 With wiro you can also create clients and perform requests:
 
-```scala
+```tut:silent
 import wiro.client._
 
 object UsersClient extends App with ClientDerivationModule {
@@ -192,8 +195,8 @@ object UsersClient extends App with ClientDerivationModule {
 
 To write tests for the router you can use the Akka [Route Testkit](http://doc.akka.io/docs/akka-http/current/scala/http/routing-dsl/testkit.html). The router to be tested can be extracted from the object that we defined above, as follows:
 
-```scala
-val route = UsersServer.usersRouter.buildRoute
+```tut:silent
+lazy val route = UsersServer.usersRouter.buildRoute
 ```
 
 

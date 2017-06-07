@@ -1,7 +1,7 @@
 
 ## Server Example
 
-```scala
+```tut:silent
 import scala.concurrent.Future
 
 import wiro.server.akkaHttp.{ RouterDerivationModule, ToHttpResponse, FailSupport, HttpRPCServer }
@@ -116,7 +116,7 @@ curl -XPOST 'http://localhost:8080/woff/puppy' \
 
 Add the following code:
 
-```scala
+```tut:silent
 import wiro.client._
 
 object Client extends App with ClientDerivationModule {
