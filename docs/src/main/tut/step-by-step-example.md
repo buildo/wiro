@@ -123,7 +123,7 @@ object errors {
 
 ### 4 - Router creation
 
-Now we have everithing we need to instance and star the router:
+Now we have everithing we need to instance and start the router:
 
 ```tut:silent
 import akka.actor.ActorSystem
