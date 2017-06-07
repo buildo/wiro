@@ -33,12 +33,12 @@ trait ControllersInterfaces {
   @path("users")
   trait UsersApi {
 
-    @query(name = Some("getUser"))
+    @query
     def getUser(
       id: Int
     ): Future[Either[UserNotFoundError, User]]
 
-    @command(name = Some("insertUser"))
+    @command
     def insertUser(
       id: Int,
       name: String
