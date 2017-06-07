@@ -94,6 +94,7 @@ lazy val docs = project
   .settings(ghpages.settings)
   .settings(docSettings)
   .settings(tutScalacOptions ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
+  .settings(libraryDependencies ++= Seq(scalaTest, akkaHttpTestKit, akkaHttpCirce))
   .dependsOn(serverAkkaHttp, examples)
 
 lazy val docSettings = Seq(
