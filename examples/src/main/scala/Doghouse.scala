@@ -65,7 +65,6 @@ object errors {
 object Client extends App with ClientDerivationModule {
   import controllers._
   import autowire._
-  import wiro.reflect._
 
   val config = Config("localhost", 8080)
 
@@ -82,7 +81,6 @@ object Client extends App with ClientDerivationModule {
 
 object Server extends App with RouterDerivationModule {
   import controllers._
-  import wiro.reflect._
   import models._
   import errors._
   import FailSupport._

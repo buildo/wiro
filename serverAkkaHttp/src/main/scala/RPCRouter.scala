@@ -18,8 +18,6 @@ import scala.language.implicitConversions
 import scala.util.{ Try, Success, Failure }
 import scala.concurrent.Future
 
-import wiro.models._
-
 trait Router extends RPCServer with PathMacro with MetaDataMacro {
   def tp: Seq[String]
   def methodsMetaData: Map[String, MethodMetaData]
