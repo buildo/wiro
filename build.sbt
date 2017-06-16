@@ -48,8 +48,8 @@ lazy val noPublishSettings = Seq(
 lazy val root = project.in(file("."))
   .settings(commonSettings)
   .settings(noPublishSettings)
-  .aggregate(core, serverAkkaHttp, clientAkkaHttp, macros)
-  .dependsOn(core, serverAkkaHttp, clientAkkaHttp, macros)
+  .aggregate(core, serverAkkaHttp, clientAkkaHttp)
+  .dependsOn(core, serverAkkaHttp, clientAkkaHttp)
 
 lazy val core = project
   .settings(commonSettings: _*)
@@ -65,7 +65,6 @@ lazy val serverAkkaHttp = project
     bintrayPackageLabels := Seq("buildo", "wiro", "wiro-http-server")
   )
   .dependsOn(core)
-  .dependsOn(macros)
 
 lazy val clientAkkaHttp = project
   .settings(commonSettings: _*)
@@ -74,14 +73,6 @@ lazy val clientAkkaHttp = project
     bintrayPackageLabels := Seq("buildo", "wiro", "wiro-http-client")
   )
   .dependsOn(core)
-  .dependsOn(macros)
-
-lazy val macros = project
-  .settings(commonSettings)
-  .settings(
-    name := "wiro-macros",
-    bintrayPackageLabels := Seq("buildo", "wiro", "wiro-macros")
-  )
 
 lazy val examples = project
   .settings(commonSettings: _*)
