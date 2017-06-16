@@ -1,19 +1,17 @@
 package wiro
 
-import io.circe._
+import io.circe.Json
 
-package object models {
-  case class Config(
-    host: String,
-    port: Int
-  )
+case class Config(
+  host: String,
+  port: Int
+)
 
-  case class WiroRequest(
-    args: String
-  )
+case class WiroRequest(
+  args: String
+)
 
-  case class RpcRequest(
-    path: Seq[String],
-    args: Map[String, io.circe.Json]
-  )
-}
+case class RpcRequest(
+  path: Seq[String],
+  args: Map[String, Json]
+)

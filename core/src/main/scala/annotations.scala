@@ -1,7 +1,6 @@
 package wiro
 
 import scala.annotation.StaticAnnotation
-import wiro.server.akkaHttp.AuthenticationType
 
 package object annotation {
   class command(name: Option[String] = None) extends StaticAnnotation

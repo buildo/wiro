@@ -1,4 +1,5 @@
-package wiro.server.akkaHttp
+package wiro
+package server.akkaHttp
 
 import AutowireErrorSupport._
 

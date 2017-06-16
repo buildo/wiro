@@ -1,4 +1,5 @@
-package wiro.server.akkaHttp
+package wiro
+package server.akkaHttp
 
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
@@ -25,8 +26,6 @@ object RouterDerivationMacro extends RouterDerivationModule {
     }
 
     q"""
-    import wiro.server.akkaHttp.{ OperationType, AuthenticationType, MethodMetaData, Router }
-
     new Router {
       override val routes = route[$tpe]($a)
       override val methodsMetaData = deriveMetaData[$tpe]

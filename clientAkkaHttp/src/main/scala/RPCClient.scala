@@ -1,4 +1,5 @@
-package wiro.client
+package wiro
+package client.akkaHttp
 
 import akka.actor.ActorSystem
 
@@ -14,9 +15,6 @@ import io.circe._
 import io.circe.syntax._
 
 import scala.concurrent.{ ExecutionContext, Future }
-
-import wiro.models.Config
-import wiro.server.akkaHttp.{ MethodMetaData, MetaDataMacro, OperationType, PathMacro }
 
 trait RPCClientContext[T] extends MetaDataMacro with PathMacro {
   def methodsMetaData: Map[String, MethodMetaData]

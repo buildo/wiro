@@ -1,4 +1,5 @@
-package wiro.server.akkaHttp
+package wiro
+package server.akkaHttp
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -9,7 +10,6 @@ import akka.stream.ActorMaterializer
 
 import scala.io.StdIn
 
-import wiro.models.Config
 import wiro.server.akkaHttp.{ Router => WiroRouter }
 
 class HttpRPCServer(

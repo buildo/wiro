@@ -1,4 +1,5 @@
-package wiro.client
+package wiro
+package client.akkaHttp
 
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context

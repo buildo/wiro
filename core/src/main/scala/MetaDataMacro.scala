@@ -1,4 +1,4 @@
-package wiro.server.akkaHttp
+package wiro
 
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
