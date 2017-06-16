@@ -4,7 +4,7 @@ import scala.reflect.macros.blackbox.Context
 import scala.language.experimental.macros
 import wiro.annotation.path
 
-trait RouterDerivationModule extends PathMacro with MetaDataMacro {
+trait RouterDerivationModule extends PathMacro with MetaDataMacro with TypePathMacro {
   def deriveRouter[A](a: A): Router = macro RouterDerivationMacro.deriveRouterImpl[A]
 }
 
