@@ -10,8 +10,7 @@ import io.circe.generic.auto._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import wiro.client._
-import wiro.models.Config
+import wiro.Config
 import wiro.server.akkaHttp.{ FailSupport, HttpRPCServer, RouterDerivationModule, ToHttpResponse }
 
 object controllers {
