@@ -1,8 +1,8 @@
 package wiro.server.akkaHttp
 
 import akka.http.scaladsl.server._
-import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.AuthenticationFailedRejection.CredentialsRejected
+import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.headers.HttpChallenges
 import akka.http.scaladsl.model._
 

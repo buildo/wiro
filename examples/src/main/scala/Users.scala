@@ -1,20 +1,17 @@
+import akka.actor.ActorSystem
+import akka.http.scaladsl.model.{ HttpResponse, StatusCodes, ContentType, HttpEntity, MediaTypes }
+import akka.stream.ActorMaterializer
+
+import FailSupport._
+
+import io.circe.generic.auto._
+
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-
 import wiro.models.Config
-import wiro.server.akkaHttp.{ RouterDerivationModule, FailSupport, HttpRPCServer }
-import wiro.server.akkaHttp.ToHttpResponse
-
 import wiro.reflect._
-import FailSupport._
-
-import akka.http.scaladsl.model.{ HttpResponse, StatusCodes, ContentType, HttpEntity}
-import akka.http.scaladsl.model.MediaTypes
-
-import io.circe.generic.auto._
+import wiro.server.akkaHttp._
 
 // Models definition
 object models {

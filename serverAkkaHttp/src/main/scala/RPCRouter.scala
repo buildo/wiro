@@ -1,20 +1,23 @@
 package wiro.server.akkaHttp
 
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{ Route, Directive1, ExceptionHandler }
+import AutowireErrorSupport._
+
 import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.{ Directive1, ExceptionHandler, Route }
+
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
-import wiro.models._
 import FailSupport._
-import AutowireErrorSupport._
+
+import io.circe.Json
 
 import scala.language.implicitConversions
 
 import scala.util.{ Try, Success, Failure }
 import scala.concurrent.Future
 
-import io.circe.Json
+import wiro.models._
 
 trait Router extends RPCServer with PathMacro with MetaDataMacro {
   def tp: Seq[String]

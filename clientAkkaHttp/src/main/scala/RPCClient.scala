@@ -1,20 +1,22 @@
 package wiro.client
 
-import wiro.models.Config
-import wiro.server.akkaHttp.{ MethodMetaData, MetaDataMacro, PathMacro, OperationType }
+import akka.actor.ActorSystem
 
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 
 import akka.stream.ActorMaterializer
-import akka.actor.ActorSystem
 
-import scala.concurrent.{ Future, ExecutionContext }
+import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
 import io.circe._
 import io.circe.syntax._
-import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
+
+import scala.concurrent.{ ExecutionContext, Future }
+
+import wiro.models.Config
+import wiro.server.akkaHttp.{ MethodMetaData, MetaDataMacro, OperationType, PathMacro }
 
 trait RPCClientContext[T] extends MetaDataMacro with PathMacro {
   def methodsMetaData: Map[String, MethodMetaData]

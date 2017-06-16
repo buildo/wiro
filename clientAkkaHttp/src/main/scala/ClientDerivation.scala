@@ -1,7 +1,7 @@
 package wiro.client
 
-import scala.reflect.macros.blackbox.Context
 import scala.language.experimental.macros
+import scala.reflect.macros.blackbox.Context
 
 trait ClientDerivationModule {
   def deriveClientContext[A]: RPCClientContext[A] = macro ClientDerivationMacro.deriveClientContextImpl[A]

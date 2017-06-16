@@ -1,7 +1,8 @@
 package wiro.server.akkaHttp
 
-import scala.reflect.macros.blackbox.Context
 import scala.language.experimental.macros
+import scala.reflect.macros.blackbox.Context
+
 import wiro.annotation.path
 
 trait RouterDerivationModule extends PathMacro with MetaDataMacro with TypePathMacro {

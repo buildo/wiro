@@ -1,19 +1,18 @@
 package wiro.apps
 
-import wiro.client._
-
-import scala.concurrent.Future
-import wiro.server.akkaHttp.{ RouterDerivationModule, ToHttpResponse, FailSupport, HttpRPCServer }
-import wiro.models.Config
-
-import scala.concurrent.ExecutionContext.Implicits.global
-
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.model.{ HttpResponse, StatusCodes, ContentType, HttpEntity}
 import akka.http.scaladsl.model.MediaTypes
 
 import io.circe.generic.auto._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+import wiro.client._
+import wiro.models.Config
+import wiro.server.akkaHttp.{ FailSupport, HttpRPCServer, RouterDerivationModule, ToHttpResponse }
 
 object controllers {
   import models._

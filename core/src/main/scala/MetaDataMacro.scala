@@ -1,8 +1,9 @@
 package wiro.server.akkaHttp
 
-import scala.reflect.macros.blackbox.Context
 import scala.language.experimental.macros
-import wiro.annotation.{ command, query, auth }
+import scala.reflect.macros.blackbox.Context
+
+import wiro.annotation._
 
 sealed trait OperationType {
   def name: Option[String]

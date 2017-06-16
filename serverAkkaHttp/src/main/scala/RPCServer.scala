@@ -1,11 +1,11 @@
 package wiro.server.akkaHttp
 
-import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{ StandardRoute, Route }
+import akka.stream.ActorMaterializer
 
 import scala.io.StdIn
 
