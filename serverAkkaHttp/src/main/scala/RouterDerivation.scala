@@ -17,7 +17,7 @@ object RouterDerivationMacro extends RouterDerivationModule {
 
     //check only annotations of path type
     val pathAnnotated = tpe.typeSymbol.annotations.collectFirst {
-      case pathAnnotation if pathAnnotation.tpe <:< c.weakTypeOf[path] => pathAnnotation
+      case pathAnnotation if pathAnnotation.tree.tpe <:< c.weakTypeOf[path] => pathAnnotation
     }
 
     val derivePath = pathAnnotated match {

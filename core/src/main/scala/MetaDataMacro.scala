@@ -37,16 +37,16 @@ object MetaDataMacro extends MetaDataMacro {
       case m: MethodSymbol =>
         val methodName = m.fullName
         val operationType = m.annotations.collectFirst {
-          case opAnnotation if opAnnotation.tpe <:< c.weakTypeOf[command] =>
+          case opAnnotation if opAnnotation.tree.tpe <:< c.weakTypeOf[command] =>
             val name = opAnnotation.tree.children.tail.head
             q"OperationType.Command($name)"
-          case opAnnotation if opAnnotation.tpe <:< c.weakTypeOf[query] =>
+          case opAnnotation if opAnnotation.tree.tpe <:< c.weakTypeOf[query] =>
             val name = opAnnotation.tree.children.tail.head
             q"OperationType.Query($name)"
         }
 
         val authenticationType = m.annotations.collectFirst {
-          case authAnnotation if authAnnotation.tpe <:< c.weakTypeOf[auth] =>
+          case authAnnotation if authAnnotation.tree.tpe <:< c.weakTypeOf[auth] =>
             authAnnotation.tree.children.tail.head
         }.headOption match {
           case Some(tree) => tree
