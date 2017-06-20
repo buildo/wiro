@@ -5,7 +5,7 @@
 import scala.concurrent.Future
 
 import wiro.server.akkaHttp.{ RouterDerivationModule, ToHttpResponse, FailSupport, HttpRPCServer }
-import wiro.models.Config
+import wiro.Config
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -74,7 +74,6 @@ object errors {
 // Creating the wiro server
 object Server extends App with RouterDerivationModule {
   import controllers._
-  import wiro.reflect._
   import models._
   import errors._
   import FailSupport._
@@ -122,7 +121,6 @@ import wiro.client._
 object Client extends App with ClientDerivationModule {
   import controllers._
   import autowire._
-  import wiro.reflect._
 
   val config = Config("localhost", 8080)
 

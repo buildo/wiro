@@ -130,7 +130,7 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 
 import wiro.reflect._
-import wiro.models.Config
+import wiro.Config
 import wiro.server.akkaHttp.{ RouterDerivationModule, FailSupport, HttpRPCServer }
 
 object UsersServer extends App with RouterDerivationModule {

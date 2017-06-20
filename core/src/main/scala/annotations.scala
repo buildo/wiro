@@ -1,9 +1,10 @@
 package wiro
 
-import wiro.server.akkaHttp.AuthenticationType
+import scala.annotation.StaticAnnotation
 
 package object annotation {
-  case class command(name: Option[String] = None) extends scala.annotation.StaticAnnotation
-  case class query(name: Option[String] = None) extends scala.annotation.StaticAnnotation
-  case class auth(authenticationType: AuthenticationType) extends scala.annotation.StaticAnnotation
+  class command(name: Option[String] = None) extends StaticAnnotation
+  class query(name: Option[String] = None) extends StaticAnnotation
+  class auth(authenticationType: AuthenticationType) extends StaticAnnotation
+  class path(name: String) extends StaticAnnotation
 }

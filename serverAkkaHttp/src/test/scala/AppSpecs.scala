@@ -1,12 +1,13 @@
 package wiro
 
-import akka.util.ByteString
-import akka.http.scaladsl.model.{ HttpEntity, MediaTypes, StatusCodes }
-import akka.http.scaladsl.server.MethodRejection
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.HttpMethods._
+import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.MethodRejection
+import akka.http.scaladsl.testkit.ScalatestRouteTest
+
+import akka.util.ByteString
 
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 

@@ -7,7 +7,6 @@ import io.circe.generic.auto._
 import scala.concurrent.{ ExecutionContext, Future }
 
 import wiro.annotation._
-import wiro.reflect._
 import wiro.server.akkaHttp._
 import wiro.server.akkaHttp.FailSupport._
 
