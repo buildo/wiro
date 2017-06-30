@@ -15,3 +15,7 @@ case class RpcRequest(
   path: Seq[String],
   args: Map[String, Json]
 )
+
+case class Token(
+  token: String
+)

@@ -10,7 +10,7 @@ import io.circe.generic.auto._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import wiro.Config
+import wiro.{ Config, Token }
 import wiro.server.akkaHttp._
 import wiro.client.akkaHttp._
 
@@ -24,8 +24,9 @@ object controllers {
 
   @path("woff")
   trait DoghouseApi {
-    @command(name = Some("puppy"))
+    @query(name = Some("puppy"))
     def getPuppy(
+      token: Token,
       wa: Int
     ): Future[Either[Nope, Dog]]
 
@@ -41,11 +42,13 @@ object controllers {
     ): Future[Either[Nope, Dog]] = Future(Right(Dog("pallino")))
 
     override def getPuppy(
+      token: Token,
       wa: Int
-    ): Future[Either[Nope, Dog]] = Future(Left{
-      println(wa)
-      Nope("Not doing that")
-    })
+    ): Future[Either[Nope, Dog]] = Future {
+      println(token)
+      if (token == Token("tokenone")) Right(Dog("pallino"))
+      else Left(Nope("nope"))
+    }
   }
 }
 
