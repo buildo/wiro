@@ -27,8 +27,8 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   def buildRoute: Route = handleExceptions(exceptionHandler) {
     pathPrefix(path) {
       methodsMetaData map {
-        case (k, v @ MethodMetaData(OperationType.Command(_), _)) => command(k, v)
-        case (k, v @ MethodMetaData(OperationType.Query(_), _))   => query(k, v)
+        case (k, v @ MethodMetaData(OperationType.Command(_))) => command(k, v)
+        case (k, v @ MethodMetaData(OperationType.Query(_)))   => query(k, v)
       } reduce (_ ~ _)
     }
   }
