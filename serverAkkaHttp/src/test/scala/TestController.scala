@@ -9,6 +9,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import wiro.annotation._
 import wiro.server.akkaHttp._
 import wiro.server.akkaHttp.FailSupport._
+import wiro.Token
 
 object TestController extends RouterDerivationModule {
   case class UserNotFound(userId: Int)

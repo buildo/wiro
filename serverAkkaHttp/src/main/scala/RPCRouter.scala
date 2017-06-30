@@ -95,7 +95,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
 
   implicit class PimpMyMap(m: Map[String, Json]) {
     def withToken(token: Option[String]): Map[String, Json] = token match {
-      case Some(t) => m + ("token" -> Json.fromString(t))
+      case Some(t) => m + ("token" -> Json.obj("token" -> Json.fromString(t)))
       case None => m
     }
   }
