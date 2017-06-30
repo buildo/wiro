@@ -2,16 +2,15 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{ HttpResponse, StatusCodes, ContentType, HttpEntity, MediaTypes }
 import akka.stream.ActorMaterializer
 
-import FailSupport._
-
 import io.circe.generic.auto._
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import wiro.models.Config
-import wiro.reflect._
+import wiro.Config
 import wiro.server.akkaHttp._
+import wiro.client.akkaHttp._
+
 
 // Models definition
 object models {
@@ -91,6 +90,7 @@ object UsersServer extends App with RouterDerivationModule {
   import controllers._
   import models._
   import errors._
+  import FailSupport._
 
   val usersRouter = deriveRouter[UsersApi](new UsersApiImpl)
 
@@ -102,8 +102,6 @@ object UsersServer extends App with RouterDerivationModule {
     routers = List(usersRouter)
   )
 }
-
-import wiro.client._
 
 object UsersClient extends App with ClientDerivationModule {
   import controllers._

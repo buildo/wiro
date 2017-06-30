@@ -11,7 +11,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 import wiro.Config
-import wiro.server.akkaHttp.{ FailSupport, HttpRPCServer, RouterDerivationModule, ToHttpResponse }
+import wiro.server.akkaHttp._
+import wiro.client.akkaHttp._
 
 object controllers {
   import models._

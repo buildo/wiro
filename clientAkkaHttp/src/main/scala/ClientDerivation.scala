@@ -4,7 +4,7 @@ package client.akkaHttp
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
 
-trait ClientDerivationModule {
+trait ClientDerivationModule extends TypePathMacro {
   def deriveClientContext[A]: RPCClientContext[A] = macro ClientDerivationMacro.deriveClientContextImpl[A]
 }
 
@@ -14,7 +14,7 @@ object ClientDerivationMacro extends ClientDerivationModule {
     val tpe = weakTypeOf[A]
 
     q"""
-    import wiro.server.akkaHttp.{ OperationType, AuthenticationType, MethodMetaData }
+    import wiro.{ OperationType, AuthenticationType, MethodMetaData }
 
     new RPCClientContext[$tpe] {
       override val methodsMetaData = deriveMetaData[$tpe]
