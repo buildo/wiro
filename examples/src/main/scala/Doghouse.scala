@@ -45,7 +45,6 @@ object controllers {
       token: Token,
       wa: Int
     ): Future[Either[Nope, Dog]] = Future {
-      println(token)
       if (token == Token("tokenone")) Right(Dog("pallino"))
       else Left(Nope("nope"))
     }
