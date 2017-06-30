@@ -19,21 +19,21 @@ object TestController extends RouterDerivationModule {
   case class Ok(msg: String)
   case class Unauthorized(msg: String)
 
-  implicit def GenericErrorToResponse = new ToHttpResponse[GenericError] {
+  implicit def genericErrorToResponse = new ToHttpResponse[GenericError] {
     def response(error: GenericError) = HttpResponse(
       status = StatusCodes.InternalServerError,
       entity = "Very Bad"
     )
   }
 
-  implicit def UnauthorizedToResponse = new ToHttpResponse[Unauthorized] {
+  implicit def unauthorizedToResponse = new ToHttpResponse[Unauthorized] {
     def response(error: Unauthorized) = HttpResponse(
       status = StatusCodes.Unauthorized,
       entity = "Very Bad"
     )
   }
 
-  implicit def ConflictToResponse = new ToHttpResponse[Conflict] {
+  implicit def conflictToResponse = new ToHttpResponse[Conflict] {
     def response(error: Conflict) = HttpResponse(
       status = StatusCodes.Conflict,
       entity = s"User already exists: ${error.userId}"

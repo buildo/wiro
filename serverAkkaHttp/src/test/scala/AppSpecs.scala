@@ -1,9 +1,9 @@
 package wiro
 
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.HttpChallenge
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.headers.HttpChallenge
 import akka.http.scaladsl.server.{ AuthenticationFailedRejection, MethodRejection }
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
