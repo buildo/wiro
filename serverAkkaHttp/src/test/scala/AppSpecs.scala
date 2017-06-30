@@ -3,8 +3,9 @@ package wiro
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.model.headers.HttpChallenge
+import akka.http.scaladsl.server.{ AuthenticationFailedRejection, MethodRejection }
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.MethodRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 
 import akka.util.ByteString
@@ -185,6 +186,28 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
         Get("/user/read?id=1") ~> userRouter.buildRoute ~> check {
           status should be (OK)
           responseAs[User] should be (User(1, "read"))
+        }
+      }
+    }
+
+    "it's authenticated" should {
+      "block user without proper token" in {
+        Get("/user/nobodyCannaCrossIt") ~> userRouter.buildRoute ~> check {
+          rejections shouldEqual List(AuthenticationFailedRejection(
+            cause = AuthenticationFailedRejection.CredentialsRejected,
+            challenge = HttpChallenge(
+              scheme = "Basic",
+              realm = "api",
+              params = Map("charset" -> "UTF-8")
+            )
+          ))
+        }
+      }
+
+      "not block user having proper token" in {
+        Get("/user/nobodyCannaCrossIt") ~> addHeader("Authorization", "Token token=bus") ~> userRouter.buildRoute ~> check {
+          status should be (OK)
+          responseAs[Ok] should be (Ok("di bus can swim"))
         }
       }
     }

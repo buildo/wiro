@@ -9,7 +9,6 @@ import scala.concurrent.{ ExecutionContext, Future }
 import wiro.annotation._
 import wiro.server.akkaHttp._
 import wiro.server.akkaHttp.FailSupport._
-import wiro.Token
 
 object TestController extends RouterDerivationModule {
   case class UserNotFound(userId: Int)
@@ -18,10 +17,18 @@ object TestController extends RouterDerivationModule {
   type GenericError = GenericError.type
   case class User(id: Int, username: String)
   case class Ok(msg: String)
+  case class Unauthorized(msg: String)
 
   implicit def GenericErrorToResponse = new ToHttpResponse[GenericError] {
     def response(error: GenericError) = HttpResponse(
       status = StatusCodes.InternalServerError,
+      entity = "Very Bad"
+    )
+  }
+
+  implicit def UnauthorizedToResponse = new ToHttpResponse[Unauthorized] {
+    def response(error: Unauthorized) = HttpResponse(
+      status = StatusCodes.Unauthorized,
       entity = "Very Bad"
     )
   }
@@ -43,6 +50,9 @@ object TestController extends RouterDerivationModule {
   //controllers interface and implementation
   @path("user")
   trait UserController {
+    @query
+    def nobodyCannaCrossIt(token: Token): Future[Either[Unauthorized, Ok]]
+
     @command
     def update(id: Int, user: User): Future[Either[UserNotFound, Ok]]
 
@@ -65,6 +75,11 @@ object TestController extends RouterDerivationModule {
   private[this] class UserControllerImpl(implicit
     ec: ExecutionContext
   ) extends UserController {
+    def nobodyCannaCrossIt(token: Token): Future[Either[Unauthorized, Ok]] = Future {
+      if (token == Token("bus")) Right(Ok("di bus can swim"))
+      else Left(Unauthorized("yuh cannot cross it"))
+    }
+
     def update(id: Int, user: User): Future[Either[UserNotFound, Ok]] = Future {
       if (id == 1) Right(Ok("update"))
       else Left(UserNotFound(id))
