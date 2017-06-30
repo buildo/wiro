@@ -76,7 +76,7 @@ object Client extends App with ClientDerivationModule {
   val doghouseClient = deriveClientContext[DoghouseApi]
   val rpcClient = new RPCClient(config, doghouseClient)
 
-  val res = rpcClient[DoghouseApi].getPuppy(1).call()
+  val res = rpcClient[DoghouseApi].getPuppy(Token("tokenone"), 1).call()
 
   res map (println(_))
 }
