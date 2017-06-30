@@ -4,7 +4,7 @@
 ```tut:silent
 import scala.concurrent.Future
 
-import wiro.server.akkaHttp.{ RouterDerivationModule, ToHttpResponse, FailSupport, HttpRPCServer }
+import wiro.server.akkaHttp._
 import wiro.Config
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -116,7 +116,7 @@ curl -XPOST 'http://localhost:8080/woff/puppy' \
 Add the following code:
 
 ```tut:silent
-import wiro.client._
+import wiro.client.akkaHttp._
 
 object Client extends App with ClientDerivationModule {
   import controllers._
