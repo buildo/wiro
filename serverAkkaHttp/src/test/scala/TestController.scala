@@ -51,7 +51,7 @@ object TestController extends RouterDerivationModule {
   @path("user")
   trait UserController {
     @query
-    def nobodyCannaCrossIt(token: Token): Future[Either[Unauthorized, Ok]]
+    def nobodyCannaCrossIt(token: Auth): Future[Either[Unauthorized, Ok]]
 
     @command
     def update(id: Int, user: User): Future[Either[UserNotFound, Ok]]
@@ -75,8 +75,8 @@ object TestController extends RouterDerivationModule {
   private[this] class UserControllerImpl(implicit
     ec: ExecutionContext
   ) extends UserController {
-    def nobodyCannaCrossIt(token: Token): Future[Either[Unauthorized, Ok]] = Future {
-      if (token == Token("bus")) Right(Ok("di bus can swim"))
+    def nobodyCannaCrossIt(token: Auth): Future[Either[Unauthorized, Ok]] = Future {
+      if (token == Auth("bus")) Right(Ok("di bus can swim"))
       else Left(Unauthorized("yuh cannot cross it"))
     }
 

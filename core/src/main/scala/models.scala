@@ -16,6 +16,6 @@ case class RpcRequest(
   args: Map[String, Json]
 )
 
-case class Token(
+case class Auth(
   token: String
 )
