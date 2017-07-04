@@ -26,7 +26,7 @@ object RouterDerivationMacro extends RouterDerivationModule {
     }
 
     q"""
-    import wiro.{ OperationType, MethodMetaData, AuthenticationType }
+    import wiro.{ OperationType, MethodMetaData }
 
     new Router {
       override val routes = route[$tpe]($a)

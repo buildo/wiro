@@ -14,6 +14,7 @@ The following snippet defines a model for `User` and an interface that follows t
 
 ```tut:silent
 import scala.concurrent.Future
+import wiro.annotation._
 
 // Models definition
 object models {
@@ -22,7 +23,6 @@ object models {
 
 trait ControllersInterfaces {
   import models._
-  import wiro.annotation._
 
   // Error messages
   case class Error(msg: String)
@@ -129,9 +129,8 @@ Now we have everithing we need to instance and start the router:
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 
-import wiro.reflect._
 import wiro.Config
-import wiro.server.akkaHttp.{ RouterDerivationModule, FailSupport, HttpRPCServer }
+import wiro.server.akkaHttp._
 
 object UsersServer extends App with RouterDerivationModule {
   import controllers._
@@ -175,7 +174,7 @@ curl -XGET 'http://localhost:8080/users/getUser?id=0'
 With wiro you can also create clients and perform requests:
 
 ```tut:silent
-import wiro.client._
+import wiro.client.akkaHttp._
 
 object UsersClient extends App with ClientDerivationModule {
   import controllers._

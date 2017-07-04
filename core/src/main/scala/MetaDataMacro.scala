@@ -9,20 +9,13 @@ sealed trait OperationType {
   def name: Option[String]
 }
 
-sealed trait AuthenticationType
-object AuthenticationType {
-  case object Nope extends AuthenticationType
-  case object Token extends AuthenticationType
-}
-
 object OperationType {
   case class Command(name: Option[String]) extends OperationType
   case class Query(name: Option[String]) extends OperationType
 }
 
 case class MethodMetaData(
-  operationType: OperationType,
-  authenticationType: AuthenticationType
+  operationType: OperationType
 )
 
 trait MetaDataMacro {
@@ -45,14 +38,7 @@ object MetaDataMacro extends MetaDataMacro {
             q"OperationType.Query($name)"
         }
 
-        val authenticationType = m.annotations.collectFirst {
-          case authAnnotation if authAnnotation.tree.tpe <:< c.weakTypeOf[auth] =>
-            authAnnotation.tree.children.tail.head
-        }.headOption match {
-          case Some(tree) => tree
-          case None => q"AuthenticationType.Nope"
-        }
-        q"($methodName -> $operationType.map { o => MethodMetaData(o, $authenticationType) })"
+        q"($methodName -> $operationType.map { o => MethodMetaData(o) })"
     }
 
     q"Map(..$decls) collect { case (k, Some(v)) => (k -> v) }"

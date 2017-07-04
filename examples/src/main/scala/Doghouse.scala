@@ -10,7 +10,7 @@ import io.circe.generic.auto._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import wiro.Config
+import wiro.{ Config, Auth }
 import wiro.server.akkaHttp._
 import wiro.client.akkaHttp._
 
@@ -24,8 +24,9 @@ object controllers {
 
   @path("woff")
   trait DoghouseApi {
-    @command(name = Some("puppy"))
+    @query(name = Some("puppy"))
     def getPuppy(
+      token: Auth,
       wa: Int
     ): Future[Either[Nope, Dog]]
 
@@ -41,11 +42,12 @@ object controllers {
     ): Future[Either[Nope, Dog]] = Future(Right(Dog("pallino")))
 
     override def getPuppy(
+      token: Auth,
       wa: Int
-    ): Future[Either[Nope, Dog]] = Future(Left{
-      println(wa)
-      Nope("Not doing that")
-    })
+    ): Future[Either[Nope, Dog]] = Future {
+      if (token == Auth("tokenone")) Right(Dog("pallino"))
+      else Left(Nope("nope"))
+    }
   }
 }
 
@@ -74,7 +76,7 @@ object Client extends App with ClientDerivationModule {
   val doghouseClient = deriveClientContext[DoghouseApi]
   val rpcClient = new RPCClient(config, doghouseClient)
 
-  val res = rpcClient[DoghouseApi].getPuppy(1).call()
+  val res = rpcClient[DoghouseApi].getPuppy(Auth("tokenone"), 1).call()
 
   res map (println(_))
 }

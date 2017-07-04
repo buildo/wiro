@@ -25,3 +25,6 @@ This is sometimes referred to as *WYGOPIAO*: What You GET Or POST Is An Operatio
 
 
 {% include_relative step-by-step-example.md %}
+
+
+{% include_relative authorization.md %}
