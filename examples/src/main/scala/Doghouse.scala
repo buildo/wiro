@@ -2,8 +2,7 @@ package wiro.apps
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.http.scaladsl.model.{ HttpResponse, StatusCodes, ContentType, HttpEntity}
-import akka.http.scaladsl.model.MediaTypes
+import akka.http.scaladsl.model.{ HttpResponse, StatusCodes, ContentType, HttpEntity, MediaTypes }
 
 import io.circe.generic.auto._
 
