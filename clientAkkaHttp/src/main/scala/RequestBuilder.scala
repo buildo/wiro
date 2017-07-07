@@ -18,7 +18,8 @@ class RequestBuilder(
     //if it fails at runtime it means something is wrong in the implementation
     val methodMetaData = ctx.methodsMetaData
       .getOrElse(completePath, throw new Exception(s"Couldn't find metadata about method $completePath"))
-    val operationName = methodMetaData.operationType.name.getOrElse(path.last)
+    val operationName = methodMetaData.operationType.name
+      .getOrElse(path.lastOption.getOrElse(throw new Exception("Couldn't find appropriate method path")))
     val uri = s"http://${config.host}:${config.port}/${ctx.path}/$operationName"
 
     methodMetaData.operationType match {
