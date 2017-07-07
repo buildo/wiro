@@ -6,6 +6,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.http.scaladsl.model.headers.RawHeader
 
 import akka.stream.ActorMaterializer
 
@@ -13,6 +14,7 @@ import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
 import io.circe._
 import io.circe.syntax._
+import io.circe.generic.auto._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -44,25 +46,52 @@ class RPCClient(
     }
   }
 
-  private[this] def commandHttpRequest(request: Request, uri: String): HttpRequest =
-    HttpRequest(
-      uri = uri,
-      method = HttpMethods.POST,
-      entity = HttpEntity(
-        contentType = ContentTypes.`application/json`,
-        string = request.args.asJson.noSpaces
-      )
-    )
-
-
-  private[this] def queryHttpRequqest(request: Request, uri: String): HttpRequest = {
-    val args = request.args.map { case (name, value) => s"$name=${value.noSpaces}" }.mkString("&")
-    val completeUri = s"$uri?$args"
-    HttpRequest(
-      uri = completeUri,
-      method = HttpMethods.GET
-    )
+  private[this] def splitTokenArgs(args: Map[String, Json]): (List[String], Map[String, Json]) = {
+    val tokenCandidates = args.map { case (_, v) => v.as[wiro.Auth] }.collect { case Right(result) => result.token }.toList
+    val nonTokenArgs = args.filter { case (_, v) => v.as[wiro.Auth].isLeft }
+    (tokenCandidates, nonTokenArgs)
   }
+
+  private[this] def handlingToken(
+    autowireRequest: Request
+  )(
+    httpRequest: (Map[String, Json]) => HttpRequest
+  ): HttpRequest = {
+    val (tokenCandidates, nonTokenArgs) = splitTokenArgs(autowireRequest.args)
+    val maybeToken =
+      if (tokenCandidates.length > 1) throw new Exception("Only one parameter of wiro.Auth type should be provided")
+      else tokenCandidates.headOption
+
+    maybeToken match {
+      //TODO replace with (Authorization(OAuth2BearerToken(token))))
+      case Some(token) => httpRequest(nonTokenArgs).addHeader(RawHeader("Authorization", s"Token token=$token"))
+      case None => httpRequest(nonTokenArgs)
+    }
+  }
+
+  private[this] def commandHttpRequest(request: Request, uri: String): HttpRequest =
+    handlingToken(request) { args =>
+      HttpRequest(
+        uri = uri,
+        method = HttpMethods.POST,
+        entity = HttpEntity(
+          contentType = ContentTypes.`application/json`,
+          string = args.asJson.noSpaces
+        )
+      )
+    }
+
+  private[this] def queryHttpRequest(request: Request, uri: String): HttpRequest =
+    handlingToken(request) { nonTokenArgs =>
+      val args = nonTokenArgs.map { case (name, value) => s"$name=${value.noSpaces}" }.mkString("&")
+      val completeUri = s"$uri?$args"
+      val method = HttpMethods.GET
+
+      HttpRequest(
+        uri = completeUri,
+        method = method
+      )
+    }
 
   override def doCall(autowireRequest: Request): Future[Json] = {
     val completePath = autowireRequest.path.mkString(".")
@@ -75,7 +104,7 @@ class RPCClient(
 
     val httpRequest = methodMetaData.operationType match {
       case OperationType.Command(_) => commandHttpRequest(autowireRequest, uri)
-      case OperationType.Query(_) => queryHttpRequqest(autowireRequest, uri)
+      case OperationType.Query(_) => queryHttpRequest(autowireRequest, uri)
     }
 
     Http().singleRequest(httpRequest)
