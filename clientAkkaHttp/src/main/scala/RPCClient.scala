@@ -44,7 +44,7 @@ class RPCClient(
     }
   }
 
-  private[this] def commandHttpRequest(request: Request, uri: String): HttpRequest = {
+  private[this] def commandHttpRequest(request: Request, uri: String): HttpRequest =
     HttpRequest(
       uri = uri,
       method = HttpMethods.POST,
@@ -52,6 +52,15 @@ class RPCClient(
         contentType = ContentTypes.`application/json`,
         string = request.args.asJson.noSpaces
       )
+    )
+
+
+  private[this] def queryHttpRequqest(request: Request, uri: String): HttpRequest = {
+    val args = request.args.map { case (name, value) => s"$name=${value.noSpaces}" }.mkString("&")
+    val completeUri = s"$uri?$args"
+    HttpRequest(
+      uri = completeUri,
+      method = HttpMethods.GET
     )
   }
 
@@ -66,7 +75,7 @@ class RPCClient(
 
     val httpRequest = methodMetaData.operationType match {
       case OperationType.Command(_) => commandHttpRequest(autowireRequest, uri)
-      case _ => ???
+      case OperationType.Query(_) => queryHttpRequqest(autowireRequest, uri)
     }
 
     Http().singleRequest(httpRequest)
