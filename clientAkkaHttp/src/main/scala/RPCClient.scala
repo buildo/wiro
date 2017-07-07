@@ -33,7 +33,7 @@ class RPCClient(
   def write[Result: Encoder](r: Result): Json = r.asJson
 
   def read[Result: Decoder](p: Json): Result = {
-    //This trick is required to match the Result type of autowire
+    //This trick is required to match the result type of autowire
     val right = Json.obj("Right" -> Json.obj("b" -> p))
     val left = Json.obj("Left" -> Json.obj("a" -> p))
     (left.as[Result], right.as[Result]) match {
