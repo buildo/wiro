@@ -5,8 +5,8 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
 
 import io.circe._
-import io.circe.syntax._
 import io.circe.generic.auto._
+import io.circe.syntax._
 
 class RequestBuilder(
   config: Config,
@@ -45,7 +45,6 @@ class RequestBuilder(
       else tokenCandidates.headOption
 
     maybeToken match {
-      //TODO replace with (Authorization(OAuth2BearerToken(token))))
       case Some(token) => httpRequest(nonTokenArgs).addHeader(RawHeader("Authorization", s"Token token=$token"))
       case None => httpRequest(nonTokenArgs)
     }
