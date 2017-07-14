@@ -7,11 +7,17 @@ import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{ Directive1, ExceptionHandler, Route }
 
+import cats.syntax.traverse._
+import cats.instances.map._
+import cats.instances.either._
+import cats.syntax.either._
+
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
 import FailSupport._
 
 import io.circe.Json
+import io.circe.parser._
 
 import scala.language.implicitConversions
 
@@ -57,7 +63,10 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
       requestToken { token =>
         val appliedRequest = Try(routes(autowire.Core.Request(
           path = operationFullName.split("""\."""),
-          args = queryArgs(params, token)
+          args = queryArgs(params, token) match {
+            case Left(error) => throw error
+            case Right(result) => result
+          }
         )))
 
         appliedRequest match {
@@ -88,10 +97,8 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   def commandArgs(request: Json, token: Option[String]): Map[String, Json] =
     request.as[Map[String, Json]].right.get.withToken(token)
 
-  def queryArgs(params: Map[String, String], token: Option[String]): Map[String, Json] = {
-    import io.circe.syntax._
-    params.mapValues(_.asJson).withToken(token)
-  }
+  def queryArgs(params: Map[String, String], token: Option[String]): Either[Exception, Map[String, Json]] =
+    params.mapValues(parse).sequenceU.map(_.withToken(token))
 
   implicit class PimpMyMap(m: Map[String, Json]) {
     def withToken(token: Option[String]): Map[String, Json] = token match {
