@@ -52,6 +52,7 @@ operations:</p>
 <p>The following snippet defines a model for <code class="highlighter-rouge">User</code> and an interface that follows this specification.</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">scala.concurrent.Future</span>
+<span class="k">import</span> <span class="nn">wiro.annotation._</span>
 
 <span class="c1">// Models definition
 </span><span class="k">object</span> <span class="nc">models</span> <span class="o">{</span>
@@ -60,7 +61,6 @@ operations:</p>
 
 <span class="k">trait</span> <span class="nc">ControllersInterfaces</span> <span class="o">{</span>
   <span class="k">import</span> <span class="nn">models._</span>
-  <span class="k">import</span> <span class="nn">wiro.annotation._</span>
 
   <span class="c1">// Error messages
 </span>  <span class="k">case</span> <span class="k">class</span> <span class="nc">Error</span><span class="o">(</span><span class="n">msg</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
@@ -169,9 +169,8 @@ inside the <code class="highlighter-rouge">controllers</code> object:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">akka.actor.ActorSystem</span>
 <span class="k">import</span> <span class="nn">akka.stream.ActorMaterializer</span>
 
-<span class="k">import</span> <span class="nn">wiro.reflect._</span>
-<span class="k">import</span> <span class="nn">wiro.models.Config</span>
-<span class="k">import</span> <span class="nn">wiro.server.akkaHttp.</span><span class="o">{</span> <span class="nc">RouterDerivationModule</span><span class="o">,</span> <span class="nc">FailSupport</span><span class="o">,</span> <span class="nc">HttpRPCServer</span> <span class="o">}</span>
+<span class="k">import</span> <span class="nn">wiro.Config</span>
+<span class="k">import</span> <span class="nn">wiro.server.akkaHttp._</span>
 
 <span class="k">object</span> <span class="nc">UsersServer</span> <span class="k">extends</span> <span class="nc">App</span> <span class="k">with</span> <span class="nc">RouterDerivationModule</span> <span class="o">{</span>
   <span class="k">import</span> <span class="nn">controllers._</span>
@@ -215,7 +214,7 @@ inside the <code class="highlighter-rouge">controllers</code> object:</p>
 
 <p>With wiro you can also create clients and perform requests:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wiro.client._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wiro.client.akkaHttp._</span>
 
 <span class="k">object</span> <span class="nc">UsersClient</span> <span class="k">extends</span> <span class="nc">App</span> <span class="k">with</span> <span class="nc">ClientDerivationModule</span> <span class="o">{</span>
   <span class="k">import</span> <span class="nn">controllers._</span>
@@ -255,6 +254,46 @@ inside the <code class="highlighter-rouge">controllers</code> object:</p>
 
 <span class="o">}</span>
 
+</code></pre>
+</div>
+
+<h2 id="authorization">Authorization</h2>
+
+<p>How do I authorize my routes? just add a <code class="highlighter-rouge">Auth</code> argument to your methods.</p>
+
+<p>Wiro takes care of extracting the token from “Authorization” http header in the form <code class="highlighter-rouge">Token token=${YOUR_TOKEN}</code>. The token will automagically passed as <code class="highlighter-rouge">token</code> argument.</p>
+
+<p>For example,</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">akka.http.scaladsl.model.</span><span class="o">{</span> <span class="nc">HttpResponse</span><span class="o">,</span> <span class="nc">StatusCodes</span> <span class="o">}</span>
+<span class="k">import</span> <span class="nn">scala.concurrent.Future</span>
+<span class="k">import</span> <span class="nn">wiro.Auth</span>
+<span class="k">import</span> <span class="nn">wiro.annotation._</span>
+<span class="k">import</span> <span class="nn">wiro.server.akkaHttp._</span>
+
+<span class="k">case</span> <span class="k">class</span> <span class="nc">Unauthorized</span><span class="o">(</span><span class="n">msg</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
+<span class="k">implicit</span> <span class="k">def</span> <span class="n">unauthorizedToResponse</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">ToHttpResponse</span><span class="o">[</span><span class="kt">Unauthorized</span><span class="o">]</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">response</span><span class="o">(</span><span class="n">error</span><span class="k">:</span> <span class="kt">Unauthorized</span><span class="o">)</span> <span class="k">=</span> <span class="nc">HttpResponse</span><span class="o">(</span>
+    <span class="n">status</span> <span class="k">=</span> <span class="nc">StatusCodes</span><span class="o">.</span><span class="nc">Unauthorized</span><span class="o">,</span>
+    <span class="n">entity</span> <span class="k">=</span> <span class="s">"canna cross it"</span>
+  <span class="o">)</span>
+<span class="o">}</span>
+
+<span class="nd">@path</span><span class="o">(</span><span class="s">"users"</span><span class="o">)</span>
+<span class="k">trait</span> <span class="nc">UsersApi</span> <span class="o">{</span>
+
+  <span class="nd">@query</span>
+  <span class="k">def</span> <span class="n">getUser</span><span class="o">(</span>
+    <span class="n">token</span><span class="k">:</span> <span class="kt">Auth</span><span class="o">,</span>
+    <span class="n">id</span><span class="k">:</span> <span class="kt">Int</span>
+  <span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Either</span><span class="o">[</span><span class="kt">Unauthorized</span>, <span class="kt">String</span><span class="o">]]</span>
+
+  <span class="nd">@command</span>
+  <span class="k">def</span> <span class="n">insertString</span><span class="o">(</span>
+    <span class="n">token</span><span class="k">:</span> <span class="kt">Auth</span><span class="o">,</span>
+    <span class="n">id</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span>
+    <span class="n">name</span><span class="k">:</span> <span class="kt">String</span>
+  <span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Either</span><span class="o">[</span><span class="kt">Unauthorized</span>, <span class="kt">String</span><span class="o">]]</span>
+<span class="o">}</span>
 </code></pre>
 </div>
 
