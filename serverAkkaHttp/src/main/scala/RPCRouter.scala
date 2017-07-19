@@ -16,7 +16,7 @@ import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
 import FailSupport._
 
-import io.circe.Json
+import io.circe.{ Json, ParsingFailure }
 import io.circe.parser._
 
 import scala.language.implicitConversions
@@ -63,10 +63,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
       requestToken { token =>
         val appliedRequest = Try(routes(autowire.Core.Request(
           path = operationFullName.split("""\."""),
-          args = queryArgs(params, token) match {
-            case Left(error) => throw error
-            case Right(result) => result
-          }
+          args = queryArgs(params, token)
         )))
 
         appliedRequest match {
@@ -97,8 +94,14 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   def commandArgs(request: Json, token: Option[String]): Map[String, Json] =
     request.as[Map[String, Json]].right.get.withToken(token)
 
-  def queryArgs(params: Map[String, String], token: Option[String]): Either[Exception, Map[String, Json]] =
-    params.mapValues(parse).sequenceU.map(_.withToken(token))
+  private[this] def parseJsonOrString(s: String): Json =
+    parse(s) match {
+      case Left(_) => Json.fromString(s)
+      case Right(other) => other
+    }
+
+  def queryArgs(params: Map[String, String], token: Option[String]): Map[String, Json] =
+    params.mapValues(parseJsonOrString).withToken(token)
 
   implicit class PimpMyMap(m: Map[String, Json]) {
     def withToken(token: Option[String]): Map[String, Json] = token match {
