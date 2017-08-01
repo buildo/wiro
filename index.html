@@ -1,5 +1,6 @@
-<html><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>wiro</title><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Lightweight RPC-Http Scala library" /><meta name="author" content="docs" /><meta name="og:image" content="/wiro/img/poster.png" /><meta name="og:title" content="wiro" /><meta name="og:site_name" content="wiro" /><meta name="og:url" content="http://buildo.github.io/wiro/" /><meta name="og:type" content="website" /><meta name="og:description" content="Lightweight RPC-Http Scala library" /><meta name="twitter:image" content="/wiro/img/poster.png" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:site" content="" /><link rel="icon" type="image/png" href="/wiro/img/favicon.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/wiro/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/wiro/css/style.css" /><link rel="stylesheet" href="/wiro/css/palette.css" /></head><body><header id="site-header"><div class="navbar-wrapper"><div class="container"><div class="row"><div class="col-xs-6"><a href="/wiro/" class="brand"><div class="icon-wrapper"><span>wiro</span></div></a></div><div class="col-xs-6"><nav class="text-right"><ul class=""><li><a href="https://github.com/buildo/wiro"><i class="fa fa-github"></i><span class="hidden-xs">GitHub</span></a></li></ul></nav></div></div></div></div><div class="jumbotron"><div class="container"><h1 class="text-center">Lightweight RPC-Http Scala library</h1><h2></h2><p class="text-center"><a href="https://github.com/buildo/wiro" class="btn btn-outline-inverse">View on GitHub</a></p></div></div><div><ul class="horizontalNav">      </ul></div></header><main id="site-main"><section class="use"><div class="container"><div id="content"><p><a href="https://bintray.com/buildo/maven/wiro-http-server/_latestVersion"><img src="https://api.bintray.com/packages/buildo/maven/wiro-http-server/images/download.svg" alt="Download" /></a>
-<a href="https://drone.our.buildo.io/buildo/wiro"><img src="https://drone.our.buildo.io/api/badges/buildo/wiro/status.svg" alt="Build Status" /></a></p>
+<html><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>wiro</title><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="A Scala library for writing HTTP routes" /><meta name="author" content="docs" /><meta name="og:image" content="/wiro/img/poster.png" /><meta name="og:title" content="wiro" /><meta name="og:site_name" content="wiro" /><meta name="og:url" content="http://buildo.github.io/wiro/" /><meta name="og:type" content="website" /><meta name="og:description" content="A Scala library for writing HTTP routes" /><meta name="twitter:image" content="/wiro/img/poster.png" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:site" content="" /><link rel="icon" type="image/png" href="/wiro/img/favicon.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/wiro/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/wiro/css/style.css" /><link rel="stylesheet" href="/wiro/css/palette.css" /></head><body><header id="site-header"><div class="navbar-wrapper"><div class="container"><div class="row"><div class="col-xs-6"><a href="/wiro/" class="brand"><div class="icon-wrapper"><span>wiro</span></div></a></div><div class="col-xs-6"><nav class="text-right"><ul class=""><li><a href="https://github.com/buildo/wiro"><i class="fa fa-github"></i><span class="hidden-xs">GitHub</span></a></li></ul></nav></div></div></div></div><div class="jumbotron"><div class="container"><h1 class="text-center">A Scala library for writing HTTP routes</h1><h2></h2><p class="text-center"><a href="https://github.com/buildo/wiro" class="btn btn-outline-inverse">View on GitHub</a></p></div></div><div><ul class="horizontalNav">      </ul></div></header><main id="site-main"><section class="use"><div class="container"><div id="content"><p><a href="https://bintray.com/buildo/maven/wiro-http-server/_latestVersion"><img src="https://api.bintray.com/packages/buildo/maven/wiro-http-server/images/download.svg" alt="Download" /></a>
+<a href="https://drone.our.buildo.io/buildo/wiro"><img src="https://drone.our.buildo.io/api/badges/buildo/wiro/status.svg" alt="Build Status" /></a>
+<a href="https://www.codacy.com/app/claudio_4/wiro?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=buildo/wiro&amp;utm_campaign=badger"><img src="https://api.codacy.com/project/badge/Grade/53a17fb6396c4a0daa835c407ca22866" alt="Codacy Badge" /></a></p>
 
 <p><a name="getting-started"></a></p>
 
@@ -21,21 +22,24 @@
 </code></pre>
 </div>
 
+<h2 id="why-wiro">Why Wiro?</h2>
+
+<p>Wiro is a lightweight Scala library to automatically generate http routes from scala traits.
+At buildo, we don’t like writing routes. Writing routes is often an error-prone and frustrating. Futhermore, in most of our use-cases, it can be completely automatized.</p>
+
 <h2 id="features">Features</h2>
 
+<p>Here are the most relevant features of Wiro:</p>
+
 <ul>
-  <li>Automatic generation of http routes from controllers</li>
-  <li>Extensible error module</li>
+  <li>Automatic generation of http routes from decorated Scala traits</li>
+  <li>Automatic generation of an http client that matches the generated routes</li>
+  <li>Extensible error module (based on type classes)</li>
+  <li>Custom routes definition (in case you want to use http methods or write paths that Wiro doesn’t provide)</li>
+  <li>Support for HTTP authorization header</li>
 </ul>
 
-<h2 id="whats-wrong-with-routers">What’s wrong with routers?</h2>
-
-<p>We think routes should be a one-to-one mapping with controllers’ methods.
-Wiro exposes controllers’ operations using HTTP as a transport protocol.</p>
-
-<p>This is sometimes referred to as <em>WYGOPIAO</em>: What You GET Or POST Is An Operation, and it’s closely related to RPC.</p>
-
-<h2 id="example">Example</h2>
+<h2 id="step-by-step-example">Step by Step Example</h2>
 
 <p>In this example we will build an api to store and retrieve users.</p>
 
@@ -55,34 +59,26 @@ operations:</p>
 <span class="k">import</span> <span class="nn">wiro.annotation._</span>
 
 <span class="c1">// Models definition
-</span><span class="k">object</span> <span class="nc">models</span> <span class="o">{</span>
-  <span class="k">case</span> <span class="k">class</span> <span class="nc">User</span><span class="o">(</span><span class="n">name</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
+</span><span class="k">case</span> <span class="k">class</span> <span class="nc">User</span><span class="o">(</span><span class="n">name</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
+
+<span class="c1">// Error messages
+</span><span class="k">case</span> <span class="k">class</span> <span class="nc">Error</span><span class="o">(</span><span class="n">msg</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
+<span class="k">case</span> <span class="k">class</span> <span class="nc">UserNotFoundError</span><span class="o">(</span><span class="n">msg</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
+
+<span class="nd">@path</span><span class="o">(</span><span class="s">"users"</span><span class="o">)</span>
+<span class="k">trait</span> <span class="nc">UsersApi</span> <span class="o">{</span>
+
+  <span class="nd">@query</span>
+  <span class="k">def</span> <span class="n">getUser</span><span class="o">(</span>
+    <span class="n">id</span><span class="k">:</span> <span class="kt">Int</span>
+  <span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Either</span><span class="o">[</span><span class="kt">UserNotFoundError</span>, <span class="kt">User</span><span class="o">]]</span>
+
+  <span class="nd">@command</span>
+  <span class="k">def</span> <span class="n">insertUser</span><span class="o">(</span>
+    <span class="n">id</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span>
+    <span class="n">name</span><span class="k">:</span> <span class="kt">String</span>
+  <span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Either</span><span class="o">[</span><span class="kt">Error</span>, <span class="kt">User</span><span class="o">]]</span>
 <span class="o">}</span>
-
-<span class="k">trait</span> <span class="nc">ControllersInterfaces</span> <span class="o">{</span>
-  <span class="k">import</span> <span class="nn">models._</span>
-
-  <span class="c1">// Error messages
-</span>  <span class="k">case</span> <span class="k">class</span> <span class="nc">Error</span><span class="o">(</span><span class="n">msg</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
-  <span class="k">case</span> <span class="k">class</span> <span class="nc">UserNotFoundError</span><span class="o">(</span><span class="n">msg</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
-
-  <span class="c1">// API interface
-</span>  <span class="nd">@path</span><span class="o">(</span><span class="s">"users"</span><span class="o">)</span>
-  <span class="k">trait</span> <span class="nc">UsersApi</span> <span class="o">{</span>
-
-    <span class="nd">@query</span>
-    <span class="k">def</span> <span class="n">getUser</span><span class="o">(</span>
-      <span class="n">id</span><span class="k">:</span> <span class="kt">Int</span>
-    <span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Either</span><span class="o">[</span><span class="kt">UserNotFoundError</span>, <span class="kt">User</span><span class="o">]]</span>
-
-    <span class="nd">@command</span>
-    <span class="k">def</span> <span class="n">insertUser</span><span class="o">(</span>
-      <span class="n">id</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span>
-      <span class="n">name</span><span class="k">:</span> <span class="kt">String</span>
-    <span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Either</span><span class="o">[</span><span class="kt">Error</span>, <span class="kt">User</span><span class="o">]]</span>
-  <span class="o">}</span>
-<span class="o">}</span>
-
 </code></pre>
 </div>
 <ul>
@@ -95,33 +91,31 @@ operations:</p>
 <p>Now that we have the API interface, we need to implement it. Let’s add the following implementation
 inside the <code class="highlighter-rouge">controllers</code> object:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">object</span> <span class="nc">controllers</span> <span class="k">extends</span> <span class="nc">ControllersInterfaces</span> <span class="o">{</span>
-  <span class="k">import</span> <span class="nn">models.User</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">users</span> <span class="k">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">mutable</span><span class="o">.</span><span class="nc">Map</span><span class="o">.</span><span class="n">empty</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">User</span><span class="o">]</span> <span class="c1">// Users DB
+</span>
+<span class="c1">// API implementation
+</span><span class="k">class</span> <span class="nc">UsersApiImpl</span><span class="o">()</span> <span class="k">extends</span> <span class="nc">UsersApi</span> <span class="o">{</span>
   <span class="k">import</span> <span class="nn">scala.concurrent.ExecutionContext.Implicits.global</span>
 
-  <span class="k">val</span> <span class="n">users</span> <span class="k">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">mutable</span><span class="o">.</span><span class="nc">Map</span><span class="o">.</span><span class="n">empty</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">User</span><span class="o">]</span> <span class="c1">// Users DB
-</span>
-  <span class="c1">// API implementation
-</span>  <span class="k">class</span> <span class="nc">UsersApiImpl</span><span class="o">()</span> <span class="k">extends</span> <span class="nc">UsersApi</span> <span class="o">{</span>
-    <span class="k">override</span> <span class="k">def</span> <span class="n">getUser</span><span class="o">(</span>
-      <span class="n">id</span><span class="k">:</span> <span class="kt">Int</span>
-    <span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Either</span><span class="o">[</span><span class="kt">UserNotFoundError</span>, <span class="kt">User</span><span class="o">]]</span> <span class="k">=</span> <span class="o">{</span>
-      <span class="n">users</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="n">id</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
-        <span class="k">case</span> <span class="nc">Some</span><span class="o">(</span><span class="n">user</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="nc">Future</span><span class="o">(</span><span class="nc">Right</span><span class="o">(</span><span class="n">user</span><span class="o">))</span>
-        <span class="k">case</span> <span class="nc">None</span> <span class="k">=&gt;</span> <span class="nc">Future</span><span class="o">(</span><span class="nc">Left</span><span class="o">(</span><span class="nc">UserNotFoundError</span><span class="o">(</span><span class="s">"User not found"</span><span class="o">)))</span>
-      <span class="o">}</span>
-    <span class="o">}</span>
-
-    <span class="k">override</span> <span class="k">def</span> <span class="n">insertUser</span><span class="o">(</span>
-      <span class="n">id</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span>
-      <span class="n">name</span><span class="k">:</span> <span class="kt">String</span>
-    <span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Either</span><span class="o">[</span><span class="kt">Error</span>, <span class="kt">User</span><span class="o">]]</span> <span class="k">=</span> <span class="o">{</span>
-      <span class="k">val</span> <span class="n">newUser</span> <span class="k">=</span> <span class="nc">User</span><span class="o">(</span><span class="n">name</span><span class="o">)</span>
-      <span class="n">users</span><span class="o">(</span><span class="n">id</span><span class="o">)</span> <span class="k">=</span> <span class="n">newUser</span>
-      <span class="nc">Future</span><span class="o">(</span><span class="nc">Right</span><span class="o">(</span><span class="n">newUser</span><span class="o">))</span>
+  <span class="k">override</span> <span class="k">def</span> <span class="n">getUser</span><span class="o">(</span>
+    <span class="n">id</span><span class="k">:</span> <span class="kt">Int</span>
+  <span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Either</span><span class="o">[</span><span class="kt">UserNotFoundError</span>, <span class="kt">User</span><span class="o">]]</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="n">users</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="n">id</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
+      <span class="k">case</span> <span class="nc">Some</span><span class="o">(</span><span class="n">user</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="nc">Future</span><span class="o">(</span><span class="nc">Right</span><span class="o">(</span><span class="n">user</span><span class="o">))</span>
+      <span class="k">case</span> <span class="nc">None</span> <span class="k">=&gt;</span> <span class="nc">Future</span><span class="o">(</span><span class="nc">Left</span><span class="o">(</span><span class="nc">UserNotFoundError</span><span class="o">(</span><span class="s">"User not found"</span><span class="o">)))</span>
     <span class="o">}</span>
   <span class="o">}</span>
+
+  <span class="k">override</span> <span class="k">def</span> <span class="n">insertUser</span><span class="o">(</span>
+    <span class="n">id</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span>
+    <span class="n">name</span><span class="k">:</span> <span class="kt">String</span>
+  <span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Either</span><span class="o">[</span><span class="kt">Error</span>, <span class="kt">User</span><span class="o">]]</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="k">val</span> <span class="n">newUser</span> <span class="k">=</span> <span class="nc">User</span><span class="o">(</span><span class="n">name</span><span class="o">)</span>
+    <span class="n">users</span><span class="o">(</span><span class="n">id</span><span class="o">)</span> <span class="k">=</span> <span class="n">newUser</span>
+    <span class="nc">Future</span><span class="o">(</span><span class="nc">Right</span><span class="o">(</span><span class="n">newUser</span><span class="o">))</span>
+  <span class="o">}</span>
 <span class="o">}</span>
+
 </code></pre>
 </div>
 <h3 id="3---serialization-and-deserialization">3 - Serialization and deserialization</h3>
@@ -140,31 +134,26 @@ inside the <code class="highlighter-rouge">controllers</code> object:</p>
 <span class="k">import</span> <span class="nn">akka.http.scaladsl.model.</span><span class="o">{</span> <span class="nc">HttpResponse</span><span class="o">,</span> <span class="nc">StatusCodes</span><span class="o">,</span> <span class="nc">ContentType</span><span class="o">,</span> <span class="nc">HttpEntity</span><span class="o">}</span>
 <span class="k">import</span> <span class="nn">akka.http.scaladsl.model.MediaTypes</span>
 
-<span class="k">object</span> <span class="nc">errors</span> <span class="o">{</span>
-  <span class="k">import</span> <span class="nn">controllers.UserNotFoundError</span>
+<span class="k">import</span> <span class="nn">io.circe.syntax._</span>
+<span class="k">implicit</span> <span class="k">def</span> <span class="n">notFoundToResponse</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">ToHttpResponse</span><span class="o">[</span><span class="kt">UserNotFoundError</span><span class="o">]</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">response</span><span class="o">(</span><span class="n">error</span><span class="k">:</span> <span class="kt">UserNotFoundError</span><span class="o">)</span> <span class="k">=</span> <span class="nc">HttpResponse</span><span class="o">(</span>
+    <span class="n">status</span> <span class="k">=</span> <span class="nc">StatusCodes</span><span class="o">.</span><span class="nc">NotFound</span><span class="o">,</span>
+    <span class="n">entity</span> <span class="k">=</span> <span class="nc">HttpEntity</span><span class="o">(</span><span class="nc">ContentType</span><span class="o">(</span><span class="nc">MediaTypes</span><span class="o">.</span><span class="n">`application/json`</span><span class="o">),</span> <span class="n">error</span><span class="o">.</span><span class="n">asJson</span><span class="o">.</span><span class="n">noSpaces</span><span class="o">)</span>
+  <span class="o">)</span>
+<span class="o">}</span>
 
-  <span class="k">import</span> <span class="nn">io.circe.syntax._</span>
-  <span class="k">implicit</span> <span class="k">def</span> <span class="n">notFoundToResponse</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">ToHttpResponse</span><span class="o">[</span><span class="kt">UserNotFoundError</span><span class="o">]</span> <span class="o">{</span>
-    <span class="k">def</span> <span class="n">response</span><span class="o">(</span><span class="n">error</span><span class="k">:</span> <span class="kt">UserNotFoundError</span><span class="o">)</span> <span class="k">=</span> <span class="nc">HttpResponse</span><span class="o">(</span>
-      <span class="n">status</span> <span class="k">=</span> <span class="nc">StatusCodes</span><span class="o">.</span><span class="nc">NotFound</span><span class="o">,</span>
-      <span class="n">entity</span> <span class="k">=</span> <span class="nc">HttpEntity</span><span class="o">(</span><span class="nc">ContentType</span><span class="o">(</span><span class="nc">MediaTypes</span><span class="o">.</span><span class="n">`application/json`</span><span class="o">),</span> <span class="n">error</span><span class="o">.</span><span class="n">asJson</span><span class="o">.</span><span class="n">noSpaces</span><span class="o">)</span>
-    <span class="o">)</span>
-  <span class="o">}</span>
-
-  <span class="k">import</span> <span class="nn">controllers.Error</span>
-  <span class="k">implicit</span> <span class="k">def</span> <span class="n">errorToResponse</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">ToHttpResponse</span><span class="o">[</span><span class="kt">Error</span><span class="o">]</span> <span class="o">{</span>
-    <span class="k">def</span> <span class="n">response</span><span class="o">(</span><span class="n">error</span><span class="k">:</span> <span class="kt">Error</span><span class="o">)</span> <span class="k">=</span> <span class="nc">HttpResponse</span><span class="o">(</span>
-      <span class="n">status</span> <span class="k">=</span> <span class="nc">StatusCodes</span><span class="o">.</span><span class="nc">InternalServerError</span><span class="o">,</span>
-      <span class="n">entity</span> <span class="k">=</span> <span class="nc">HttpEntity</span><span class="o">(</span><span class="nc">ContentType</span><span class="o">(</span><span class="nc">MediaTypes</span><span class="o">.</span><span class="n">`application/json`</span><span class="o">),</span> <span class="n">error</span><span class="o">.</span><span class="n">asJson</span><span class="o">.</span><span class="n">noSpaces</span><span class="o">)</span>
-    <span class="o">)</span>
-  <span class="o">}</span>
+<span class="k">implicit</span> <span class="k">def</span> <span class="n">errorToResponse</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">ToHttpResponse</span><span class="o">[</span><span class="kt">Error</span><span class="o">]</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">response</span><span class="o">(</span><span class="n">error</span><span class="k">:</span> <span class="kt">Error</span><span class="o">)</span> <span class="k">=</span> <span class="nc">HttpResponse</span><span class="o">(</span>
+    <span class="n">status</span> <span class="k">=</span> <span class="nc">StatusCodes</span><span class="o">.</span><span class="nc">InternalServerError</span><span class="o">,</span>
+    <span class="n">entity</span> <span class="k">=</span> <span class="nc">HttpEntity</span><span class="o">(</span><span class="nc">ContentType</span><span class="o">(</span><span class="nc">MediaTypes</span><span class="o">.</span><span class="n">`application/json`</span><span class="o">),</span> <span class="n">error</span><span class="o">.</span><span class="n">asJson</span><span class="o">.</span><span class="n">noSpaces</span><span class="o">)</span>
+  <span class="o">)</span>
 <span class="o">}</span>
 </code></pre>
 </div>
 
 <h3 id="4---router-creation">4 - Router creation</h3>
 
-<p>Now we have everithing we need to instance and start the router:</p>
+<p>Now we have everything we need to instance and start the router:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">akka.actor.ActorSystem</span>
 <span class="k">import</span> <span class="nn">akka.stream.ActorMaterializer</span>
@@ -172,11 +161,7 @@ inside the <code class="highlighter-rouge">controllers</code> object:</p>
 <span class="k">import</span> <span class="nn">wiro.Config</span>
 <span class="k">import</span> <span class="nn">wiro.server.akkaHttp._</span>
 
-<span class="k">object</span> <span class="nc">UsersServer</span> <span class="k">extends</span> <span class="nc">App</span> <span class="k">with</span> <span class="nc">RouterDerivationModule</span> <span class="o">{</span>
-  <span class="k">import</span> <span class="nn">controllers._</span>
-  <span class="k">import</span> <span class="nn">models._</span>
-  <span class="k">import</span> <span class="nn">errors._</span>
-
+<span class="k">object</span> <span class="nc">UserServer</span> <span class="k">extends</span> <span class="nc">App</span> <span class="k">with</span> <span class="nc">RouterDerivationModule</span> <span class="o">{</span>
   <span class="k">implicit</span> <span class="k">val</span> <span class="n">system</span> <span class="k">=</span> <span class="nc">ActorSystem</span><span class="o">()</span>
   <span class="k">implicit</span> <span class="k">val</span> <span class="n">materializer</span> <span class="k">=</span> <span class="nc">ActorMaterializer</span><span class="o">()</span>
   <span class="k">implicit</span> <span class="k">val</span> <span class="n">ec</span> <span class="k">=</span> <span class="n">system</span><span class="o">.</span><span class="n">dispatcher</span>
@@ -215,11 +200,9 @@ inside the <code class="highlighter-rouge">controllers</code> object:</p>
 <p>With wiro you can also create clients and perform requests:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wiro.client.akkaHttp._</span>
+<span class="k">import</span> <span class="nn">autowire._</span>
 
-<span class="k">object</span> <span class="nc">UsersClient</span> <span class="k">extends</span> <span class="nc">App</span> <span class="k">with</span> <span class="nc">ClientDerivationModule</span> <span class="o">{</span>
-  <span class="k">import</span> <span class="nn">controllers._</span>
-  <span class="k">import</span> <span class="nn">autowire._</span>
-
+<span class="k">object</span> <span class="nc">UserClient</span> <span class="k">extends</span> <span class="nc">App</span> <span class="k">with</span> <span class="nc">ClientDerivationModule</span> <span class="o">{</span>
   <span class="k">val</span> <span class="n">config</span> <span class="k">=</span> <span class="nc">Config</span><span class="o">(</span><span class="s">"localhost"</span><span class="o">,</span> <span class="mi">8080</span><span class="o">)</span>
 
   <span class="k">implicit</span> <span class="k">val</span> <span class="n">system</span> <span class="k">=</span> <span class="nc">ActorSystem</span><span class="o">()</span>
@@ -227,7 +210,6 @@ inside the <code class="highlighter-rouge">controllers</code> object:</p>
   <span class="k">implicit</span> <span class="k">val</span> <span class="n">ec</span> <span class="k">=</span> <span class="n">system</span><span class="o">.</span><span class="n">dispatcher</span>
 
   <span class="k">val</span> <span class="n">rpcClient</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">RPCClient</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">deriveClientContext</span><span class="o">[</span><span class="kt">UsersApi</span><span class="o">])</span>
-
   <span class="n">rpcClient</span><span class="o">[</span><span class="kt">UsersApi</span><span class="o">].</span><span class="n">insertUser</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="s">"Pippo"</span><span class="o">).</span><span class="n">call</span><span class="o">()</span> <span class="n">map</span> <span class="o">(</span><span class="n">println</span><span class="o">(</span><span class="k">_</span><span class="o">))</span>
 <span class="o">}</span>
 </code></pre>
@@ -239,21 +221,17 @@ inside the <code class="highlighter-rouge">controllers</code> object:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">org.scalatest.</span><span class="o">{</span> <span class="nc">Matchers</span><span class="o">,</span> <span class="nc">FlatSpec</span> <span class="o">}</span>
 <span class="k">import</span> <span class="nn">akka.http.scaladsl.testkit.ScalatestRouteTest</span>
-<span class="k">import</span> <span class="nn">models.User</span>
-<span class="k">import</span> <span class="nn">io.circe.generic.auto._</span>
 <span class="k">import</span> <span class="nn">de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._</span>
 
-<span class="k">class</span> <span class="nc">UserSpec</span> <span class="k">extends</span> <span class="nc">FlatSpec</span> <span class="k">with</span> <span class="nc">Matchers</span> <span class="k">with</span> <span class="nc">ScalatestRouteTest</span> <span class="o">{</span>
-  <span class="k">lazy</span> <span class="k">val</span> <span class="n">route</span> <span class="k">=</span> <span class="nc">UsersServer</span><span class="o">.</span><span class="n">usersRouter</span><span class="o">.</span><span class="n">buildRoute</span>
+<span class="k">class</span> <span class="nc">UserSpec</span> <span class="k">extends</span> <span class="nc">FlatSpec</span> <span class="k">with</span> <span class="nc">Matchers</span> <span class="k">with</span> <span class="nc">ScalatestRouteTest</span> <span class="k">with</span> <span class="nc">RouterDerivationModule</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="n">route</span> <span class="k">=</span> <span class="n">deriveRouter</span><span class="o">[</span><span class="kt">UsersApi</span><span class="o">](</span><span class="k">new</span> <span class="nc">UsersApiImpl</span><span class="o">).</span><span class="n">buildRoute</span>
 
   <span class="n">it</span> <span class="n">should</span> <span class="s">"get a user"</span> <span class="n">in</span> <span class="o">{</span>
     <span class="nc">Get</span><span class="o">(</span><span class="s">"/users/getUser?id=0"</span><span class="o">)</span> <span class="o">~&gt;</span> <span class="n">route</span> <span class="o">~&gt;</span> <span class="n">check</span> <span class="o">{</span>
       <span class="n">responseAs</span><span class="o">[</span><span class="kt">User</span><span class="o">].</span><span class="n">name</span> <span class="n">shouldBe</span> <span class="s">"Pippo"</span>
     <span class="o">}</span>
   <span class="o">}</span>
-
 <span class="o">}</span>
-
 </code></pre>
 </div>
 
