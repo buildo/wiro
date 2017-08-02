@@ -1,4 +1,4 @@
-## Example
+## Step by Step Example
 
 In this example we will build an api to store and retrieve users.
 
@@ -17,34 +17,26 @@ import scala.concurrent.Future
 import wiro.annotation._
 
 // Models definition
-object models {
-  case class User(name: String)
+case class User(name: String)
+
+// Error messages
+case class Error(msg: String)
+case class UserNotFoundError(msg: String)
+
+@path("users")
+trait UsersApi {
+
+  @query
+  def getUser(
+    id: Int
+  ): Future[Either[UserNotFoundError, User]]
+
+  @command
+  def insertUser(
+    id: Int,
+    name: String
+  ): Future[Either[Error, User]]
 }
-
-trait ControllersInterfaces {
-  import models._
-
-  // Error messages
-  case class Error(msg: String)
-  case class UserNotFoundError(msg: String)
-
-  // API interface
-  @path("users")
-  trait UsersApi {
-
-    @query
-    def getUser(
-      id: Int
-    ): Future[Either[UserNotFoundError, User]]
-
-    @command
-    def insertUser(
-      id: Int,
-      name: String
-    ): Future[Either[Error, User]]
-  }
-}
-
 ```
 * Use the `@query` and `@command` annotations to handle `GET` and `POST` requests respectively.
 * Return types must be `Future` of `Either` like above
@@ -55,33 +47,31 @@ Now that we have the API interface, we need to implement it. Let's add the follo
 inside the `controllers` object:
 
 ```tut:silent
-object controllers extends ControllersInterfaces {
-  import models.User
+val users = collection.mutable.Map.empty[Int, User] // Users DB
+
+// API implementation
+class UsersApiImpl() extends UsersApi {
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  val users = collection.mutable.Map.empty[Int, User] // Users DB
-
-  // API implementation
-  class UsersApiImpl() extends UsersApi {
-    override def getUser(
-      id: Int
-    ): Future[Either[UserNotFoundError, User]] = {
-      users.get(id) match {
-        case Some(user) => Future(Right(user))
-        case None => Future(Left(UserNotFoundError("User not found")))
-      }
-    }
-
-    override def insertUser(
-      id: Int,
-      name: String
-    ): Future[Either[Error, User]] = {
-      val newUser = User(name)
-      users(id) = newUser
-      Future(Right(newUser))
+  override def getUser(
+    id: Int
+  ): Future[Either[UserNotFoundError, User]] = {
+    users.get(id) match {
+      case Some(user) => Future(Right(user))
+      case None => Future(Left(UserNotFoundError("User not found")))
     }
   }
+
+  override def insertUser(
+    id: Int,
+    name: String
+  ): Future[Either[Error, User]] = {
+    val newUser = User(name)
+    users(id) = newUser
+    Future(Right(newUser))
+  }
 }
+
 ```
 ### 3 - Serialization and deserialization
 
@@ -100,24 +90,19 @@ import wiro.server.akkaHttp.FailSupport._
 import akka.http.scaladsl.model.{ HttpResponse, StatusCodes, ContentType, HttpEntity}
 import akka.http.scaladsl.model.MediaTypes
 
-object errors {
-  import controllers.UserNotFoundError
+import io.circe.syntax._
+implicit def notFoundToResponse = new ToHttpResponse[UserNotFoundError] {
+  def response(error: UserNotFoundError) = HttpResponse(
+    status = StatusCodes.NotFound,
+    entity = HttpEntity(ContentType(MediaTypes.`application/json`), error.asJson.noSpaces)
+  )
+}
 
-  import io.circe.syntax._
-  implicit def notFoundToResponse = new ToHttpResponse[UserNotFoundError] {
-    def response(error: UserNotFoundError) = HttpResponse(
-      status = StatusCodes.NotFound,
-      entity = HttpEntity(ContentType(MediaTypes.`application/json`), error.asJson.noSpaces)
-    )
-  }
-
-  import controllers.Error
-  implicit def errorToResponse = new ToHttpResponse[Error] {
-    def response(error: Error) = HttpResponse(
-      status = StatusCodes.InternalServerError,
-      entity = HttpEntity(ContentType(MediaTypes.`application/json`), error.asJson.noSpaces)
-    )
-  }
+implicit def errorToResponse = new ToHttpResponse[Error] {
+  def response(error: Error) = HttpResponse(
+    status = StatusCodes.InternalServerError,
+    entity = HttpEntity(ContentType(MediaTypes.`application/json`), error.asJson.noSpaces)
+  )
 }
 ```
 
@@ -132,11 +117,7 @@ import akka.stream.ActorMaterializer
 import wiro.Config
 import wiro.server.akkaHttp._
 
-object UsersServer extends App with RouterDerivationModule {
-  import controllers._
-  import models._
-  import errors._
-
+object UserServer extends App with RouterDerivationModule {
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
   implicit val ec = system.dispatcher
@@ -175,11 +156,9 @@ With wiro you can also create clients and perform requests:
 
 ```tut:silent
 import wiro.client.akkaHttp._
+import autowire._
 
-object UsersClient extends App with ClientDerivationModule {
-  import controllers._
-  import autowire._
-
+object UserClient extends App with ClientDerivationModule {
   val config = Config("localhost", 8080)
 
   implicit val system = ActorSystem()
@@ -187,7 +166,6 @@ object UsersClient extends App with ClientDerivationModule {
   implicit val ec = system.dispatcher
 
   val rpcClient = new RPCClient(config, deriveClientContext[UsersApi])
-
   rpcClient[UsersApi].insertUser(0, "Pippo").call() map (println(_))
 }
 ```
@@ -199,21 +177,15 @@ To write tests for the router you can use the Akka [Route Testkit](http://doc.ak
 ```tut:silent
 import org.scalatest.{ Matchers, FlatSpec }
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import models.User
-import io.circe.generic.auto._
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
-class UserSpec extends FlatSpec with Matchers with ScalatestRouteTest {
-  lazy val route = UsersServer.usersRouter.buildRoute
+class UserSpec extends FlatSpec with Matchers with ScalatestRouteTest with RouterDerivationModule {
+  val route = deriveRouter[UsersApi](new UsersApiImpl).buildRoute
 
   it should "get a user" in {
     Get("/users/getUser?id=0") ~> route ~> check {
       responseAs[User].name shouldBe "Pippo"
     }
   }
-
 }
-
 ```
-
-
