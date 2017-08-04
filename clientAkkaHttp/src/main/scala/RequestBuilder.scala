@@ -3,6 +3,7 @@ package client.akkaHttp
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
+import java.net.URLEncoder
 
 import io.circe._
 import io.circe.generic.auto._
@@ -64,7 +65,7 @@ class RequestBuilder(
 
   private[this] def queryHttpRequest(args: Map[String, Json], uri: String): HttpRequest =
     handlingToken(args) { nonTokenArgs =>
-      val args = nonTokenArgs.map { case (name, value) => s"$name=${value.noSpaces}" }.mkString("&")
+      val args = nonTokenArgs.map { case (name, value) => s"$name=${URLEncoder.encode(value.noSpaces)}" }.mkString("&")
       val completeUri = s"$uri?$args"
       val method = HttpMethods.GET
 
