@@ -3,7 +3,9 @@ package wiro
 import io.circe._
 import cats.data.Validated
 
-//Decoder code is taken from circe and thus licenses under https://github.com/circe/circe/blob/master/LICENSE
+//This code is modified from circe (https://github.com/circe/circe).
+//Circe is licensed under http://www.apache.org/licenses/LICENSE-2.0
+//with the following notice https://github.com/circe/circe/blob/master/NOTICE.
 trait CustomOptionDecoder {
   final def withReattempt[A](f: ACursor => Decoder.Result[A]): Decoder[A] = new Decoder[A] {
     final def apply(c: HCursor): Decoder.Result[A] = tryDecode(c)
