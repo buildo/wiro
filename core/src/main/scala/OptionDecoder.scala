@@ -3,7 +3,7 @@ package wiro
 import io.circe._
 import cats.data.Validated
 
-//Shamelessy copied by circe, author is @travisbrown
+//Decoder code is taken from circe and thus licenses under https://github.com/circe/circe/blob/master/LICENSE
 trait CustomOptionDecoder {
   final def withReattempt[A](f: ACursor => Decoder.Result[A]): Decoder[A] = new Decoder[A] {
     final def apply(c: HCursor): Decoder.Result[A] = tryDecode(c)

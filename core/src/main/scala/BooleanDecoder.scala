@@ -3,7 +3,7 @@ package wiro
 import io.circe._
 import scala.util.{ Try, Success, Failure }
 
-//Shamelessy copied by circe, author is @travisbrown
+//Decoder code is taken from circe and thus licenses under https://github.com/circe/circe/blob/master/LICENSE
 trait CustomBooleanDecoder {
   implicit final val decodeBoolean: Decoder[Boolean] = new Decoder[Boolean] {
     private[this] def fail(c: HCursor) = Left(DecodingFailure("Boolean", c.history))
