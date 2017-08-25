@@ -1,14 +1,12 @@
 package wiro
 package server.akkaHttp
 
-import akka.actor.ActorSystem
+import akka.actor.{ Actor, ActorLogging, ActorSystem, Props, Status }
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{ StandardRoute, Route }
+import akka.http.scaladsl.server.Route
+import akka.pattern.pipe
 import akka.stream.ActorMaterializer
-
-import scala.io.StdIn
 
 import wiro.server.akkaHttp.{ Router => WiroRouter }
 
@@ -20,18 +18,28 @@ class HttpRPCServer(
   system: ActorSystem,
   materializer: ActorMaterializer
 ) {
-  import system.dispatcher
-
   val route = routers
     .map(_.buildRoute)
     .foldLeft(customRoute) (_ ~ _)
 
-  val bindingFuture = Http().bindAndHandle(route, config.host, config.port)
+  system.actorOf(Props(new HttpRPCServerActor(config, route)), "wiro-server")
+}
 
-  println(s"Server online at http://${config.host}:${config.port}/\nPress RETURN to stop...")
-  StdIn.readLine() // let it run until user presses return
+class HttpRPCServerActor(
+  config: Config,
+  route: Route
+)(implicit
+  system: ActorSystem,
+  materializer: ActorMaterializer
+) extends Actor with ActorLogging {
+  import system.dispatcher
 
-  bindingFuture
-    .flatMap(_.unbind()) // trigger unbinding from the port
-    .onComplete(_ => system.terminate()) // and shutdown when done
+  override def receive = {
+    case binding: Http.ServerBinding => log.info("Binding on {}", binding.localAddress)
+    case Status.Failure(cause) => log.error(cause, s"Unable to bind to ${config.host}:${config.port}")
+  }
+
+  Http()
+    .bindAndHandle(route, config.host, config.port)
+    .pipeTo(self)
 }
