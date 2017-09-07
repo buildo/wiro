@@ -214,7 +214,7 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
 
     "points to route that includes the name of another route" should {
       "invoke the correct path" in {
-        Get("/user/readQuery?id=1") ~> userRouter.buildRoute ~> check {
+        Get("/user/readQuery?id_p=1") ~> userRouter.buildRoute ~> check {
           status should be (OK)
           responseAs[User] should be (User(1, "readQuery"))
         }
