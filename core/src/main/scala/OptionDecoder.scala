@@ -7,20 +7,7 @@ import cats.data.Validated
 //Circe is licensed under http://www.apache.org/licenses/LICENSE-2.0
 //with the following notice https://github.com/circe/circe/blob/master/NOTICE.
 trait CustomOptionDecoder {
-  final def withReattempt[A](f: ACursor => Decoder.Result[A]): Decoder[A] = new Decoder[A] {
-    final def apply(c: HCursor): Decoder.Result[A] = tryDecode(c)
-
-    override def tryDecode(c: ACursor): Decoder.Result[A] = f(c)
-
-    override def decodeAccumulating(c: HCursor): AccumulatingDecoder.Result[A] = tryDecodeAccumulating(c)
-
-    override def tryDecodeAccumulating(c: ACursor): AccumulatingDecoder.Result[A] = f(c) match {
-      case Right(v) => Validated.valid(v)
-      case Left(e) => Validated.invalidNel(e)
-    }
-  }
-
-  implicit final def decodeOption[A](implicit d: Decoder[A]): Decoder[Option[A]] = withReattempt {
+  implicit final def decodeOption[A](implicit d: Decoder[A]): Decoder[Option[A]] = Decoder.withReattempt {
     case c: HCursor =>
       if (c.value.isNull) rightNone else d(c) match {
         case Right(a) => Right(Some(a))
