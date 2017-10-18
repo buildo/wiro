@@ -1,7 +1,6 @@
 package wiro
 
 import io.circe._
-import cats.data.Validated
 
 //This code is modified from circe (https://github.com/circe/circe).
 //Circe is licensed under http://www.apache.org/licenses/LICENSE-2.0
