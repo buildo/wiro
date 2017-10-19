@@ -16,14 +16,10 @@ object RouterDerivationMacro extends RouterDerivationModule {
     val tpe = weakTypeOf[A]
 
     //check only annotations of path type
-    val pathAnnotated = tpe.typeSymbol.annotations.collectFirst {
-      case pathAnnotation if pathAnnotation.tree.tpe <:< c.weakTypeOf[path] => pathAnnotation
-    }
-
-    val derivePath = pathAnnotated match {
-      case None => EmptyTree
-      case _ => q"override val path = derivePath[$tpe]"
-    }
+    val derivePath = tpe.typeSymbol.annotations.collectFirst {
+      case pathAnnotation if pathAnnotation.tree.tpe <:< c.weakTypeOf[path] =>
+        q"override val path = derivePath[$tpe]"
+    }.getOrElse(EmptyTree)
 
     q"""
     import wiro.{ OperationType, MethodMetaData }
