@@ -44,13 +44,11 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   }
 
   private[this] val requestToken: Directive1[Option[String]] = {
-    val authDirective: Directive1[Option[String]] = headerValueByName("Authorization")
-      .flatMap { header =>
-        val TokenPattern = "Token token=(.+)".r
-        header match {
-          case TokenPattern(token) => provide(Some(token))
-          case _                   => provide(None)
-        }
+    val TokenPattern = "Token token=(.+)".r
+    val authDirective: Directive1[Option[String]] =
+      headerValueByName("Authorization").flatMap {
+        case TokenPattern(token) => provide(Some(token))
+        case _                   => provide(None)
       }
     authDirective.recover { x => provide(None) }
   }
