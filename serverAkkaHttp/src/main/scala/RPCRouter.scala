@@ -43,7 +43,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
     case f@FailException(_) => complete(f.response)
   }
 
-  private[this] def requestToken: Directive1[Option[String]] = {
+  private[this] val requestToken: Directive1[Option[String]] = {
     val authDirective: Directive1[Option[String]] = headerValueByName("Authorization")
       .flatMap { header =>
         val TokenPattern = "Token token=(.+)".r
