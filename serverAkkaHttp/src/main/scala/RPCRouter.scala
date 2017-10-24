@@ -5,7 +5,7 @@ import AutowireErrorSupport._
 
 import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{ Directive1, ExceptionHandler, Route }
+import akka.http.scaladsl.server.{ Directive0, Directive1, ExceptionHandler, Route }
 
 import cats.syntax.traverse._
 import cats.instances.map._
@@ -58,7 +58,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
     methodMetaData.operationType.name.getOrElse(operationPath(operationFullName).last)
 
   private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route = {
-    (pathPrefix(operationName(operationFullName, methodMetaData)) & pathEnd & get & parameterMap) { params =>
+    (routePathPrefix(operationFullName, methodMetaData) & pathEnd & get & parameterMap) { params =>
       requestToken { token =>
         val appliedRequest = Try(routes(autowire.Core.Request(
           path = operationPath(operationFullName),
@@ -73,9 +73,12 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
     }
   }
 
+  private[this] def routePathPrefix(operationFullName: String, methodMetaData: MethodMetaData): Directive0 =
+    pathPrefix(operationName(operationFullName, methodMetaData))
+
   //Generates POST requests
   private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route = {
-    (pathPrefix(operationName(operationFullName, methodMetaData)) & pathEnd & post & entity(as[JsonObject])) { request =>
+    (routePathPrefix(operationFullName, methodMetaData) & pathEnd & post & entity(as[JsonObject])) { request =>
       requestToken { token =>
         val appliedRequest = Try(routes(autowire.Core.Request(
           path = operationPath(operationFullName),
