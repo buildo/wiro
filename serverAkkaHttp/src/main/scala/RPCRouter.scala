@@ -40,7 +40,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   }
 
   def exceptionHandler = ExceptionHandler {
-    case f@FailException(_) => complete(f.response)
+    case f: FailException[_] => complete(f.response)
   }
 
   private[this] val requestToken: Directive1[Option[String]] = {
