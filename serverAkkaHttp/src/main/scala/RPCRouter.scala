@@ -58,15 +58,15 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   private[this] def autowireRequestRouteWithToken(operationFullName: String, args: Map[String, Json]): Route =
     requestToken(token => autowireRequestRoute(operationFullName, args ++ token.map(tokenAsArg)))
 
+  private[this] def routePathPrefix(operationFullName: String, methodMetaData: MethodMetaData): Directive0 =
+    pathPrefix(operationName(operationFullName, methodMetaData))
+
   //Generates GET requests
   private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route =
     (routePathPrefix(operationFullName, methodMetaData) & pathEnd & get & parameterMap) { params =>
       val args = params.mapValues(parseJsonOrString)
       autowireRequestRouteWithToken(operationFullName, args)
     }
-
-  private[this] def routePathPrefix(operationFullName: String, methodMetaData: MethodMetaData): Directive0 =
-    pathPrefix(operationName(operationFullName, methodMetaData))
 
   //Generates POST requests
   private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route =
