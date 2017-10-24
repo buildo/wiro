@@ -57,13 +57,16 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   private[this] def operationName(operationFullName: String, methodMetaData: MethodMetaData): String =
     methodMetaData.operationType.name.getOrElse(operationPath(operationFullName).last)
 
+  private[this] def autowireRequest(operationFullName: String, args: Map[String, Json]): autowire.Core.Request[Json] =
+    autowire.Core.Request(path = operationPath(operationFullName), args = args)
+
   //Generates GET requests
   private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route = {
     (routePathPrefix(operationFullName, methodMetaData) & pathEnd & get & parameterMap) { params =>
       requestToken { token =>
-        val appliedRequest = Try(routes(autowire.Core.Request(
-          path = operationPath(operationFullName),
-          args = params.mapValues(parseJsonOrString) ++ token.map(tokenAsArg)
+        val appliedRequest = Try(routes(autowireRequest(
+          operationFullName,
+          params.mapValues(parseJsonOrString) ++ token.map(tokenAsArg)
         )))
 
         appliedRequest match {
@@ -81,9 +84,9 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route = {
     (routePathPrefix(operationFullName, methodMetaData) & pathEnd & post & entity(as[JsonObject])) { request =>
       requestToken { token =>
-        val appliedRequest = Try(routes(autowire.Core.Request(
-          path = operationPath(operationFullName),
-          args = request.toMap ++ token.map(tokenAsArg)
+        val appliedRequest = Try(routes(autowireRequest(
+          operationFullName,
+          request.toMap ++ token.map(tokenAsArg)
         )))
 
         appliedRequest match {
