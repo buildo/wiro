@@ -64,33 +64,24 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
     Either.catchNonFatal(routes(autowireRequest(operationFullName, args)))
       .fold(handleUnwrapErrors, result => complete(result))
 
+  private[this] def autowireRequestRouteWithToken(operationFullName: String, args: Map[String, Json]): Route =
+    requestToken(token => autowireRequestRoute(operationFullName, args ++ token.map(tokenAsArg)))
+
   //Generates GET requests
-  private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route = {
+  private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route =
     (routePathPrefix(operationFullName, methodMetaData) & pathEnd & get & parameterMap) { params =>
-      requestToken { token =>
-        autowireRequestRoute(
-          operationFullName,
-          params.mapValues(parseJsonOrString) ++ token.map(tokenAsArg)
-        )
-      }
+      val args = params.mapValues(parseJsonOrString)
+      autowireRequestRouteWithToken(operationFullName, args)
     }
-  }
 
   private[this] def routePathPrefix(operationFullName: String, methodMetaData: MethodMetaData): Directive0 =
     pathPrefix(operationName(operationFullName, methodMetaData))
 
   //Generates POST requests
-  private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route = {
-    (routePathPrefix(operationFullName, methodMetaData) & pathEnd & post & entity(as[JsonObject])) { request =>
-      requestToken { token =>
-        autowireRequestRoute(
-          operationFullName,
-          request.toMap ++ token.map(tokenAsArg)
-        )
-      }
+  private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route =
+    (routePathPrefix(operationFullName, methodMetaData) & pathEnd & post & entity(as[JsonObject])) {
+      request => autowireRequestRouteWithToken(operationFullName, request.toMap)
     }
-  }
-
 
   private[this] def parseJsonOrString(s: String): Json =
     parse(s).getOrElse(Json.fromString(s))
