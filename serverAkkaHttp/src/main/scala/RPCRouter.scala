@@ -60,14 +60,18 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   private[this] def autowireRequest(operationFullName: String, args: Map[String, Json]): autowire.Core.Request[Json] =
     autowire.Core.Request(path = operationPath(operationFullName), args = args)
 
+  private[this] def autowireRequestRoute(operationFullName: String, args: Map[String, Json]): Route =
+    Either.catchNonFatal(routes(autowireRequest(operationFullName, args)))
+      .fold(handleUnwrapErrors, result => complete(result))
+
   //Generates GET requests
   private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route = {
     (routePathPrefix(operationFullName, methodMetaData) & pathEnd & get & parameterMap) { params =>
       requestToken { token =>
-        Either.catchNonFatal(routes(autowireRequest(
+        autowireRequestRoute(
           operationFullName,
           params.mapValues(parseJsonOrString) ++ token.map(tokenAsArg)
-        ))).fold(handleUnwrapErrors, result => complete(result))
+        )
       }
     }
   }
@@ -79,10 +83,10 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route = {
     (routePathPrefix(operationFullName, methodMetaData) & pathEnd & post & entity(as[JsonObject])) { request =>
       requestToken { token =>
-        Either.catchNonFatal(routes(autowireRequest(
+        autowireRequestRoute(
           operationFullName,
           request.toMap ++ token.map(tokenAsArg)
-        ))).fold(handleUnwrapErrors, result => complete(result))
+        )
       }
     }
   }
