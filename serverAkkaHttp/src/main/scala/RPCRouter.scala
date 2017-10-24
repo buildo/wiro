@@ -91,10 +91,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
     request.as[Map[String, Json]].right.get.withToken(token)
 
   private[this] def parseJsonOrString(s: String): Json =
-    parse(s) match {
-      case Left(_) => Json.fromString(s)
-      case Right(other) => other
-    }
+    parse(s).getOrElse(Json.fromString(s))
 
   def queryArgs(params: Map[String, String], token: Option[String]): Map[String, Json] =
     params.mapValues(parseJsonOrString).withToken(token)
