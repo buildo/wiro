@@ -3,26 +3,17 @@ package server.akkaHttp
 
 import AutowireErrorSupport._
 
-import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{ Directive0, Directive1, ExceptionHandler, Route }
 
-import cats.syntax.traverse._
-import cats.instances.map._
-import cats.instances.either._
 import cats.syntax.either._
 
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
 import FailSupport._
 
-import io.circe.{ Json, JsonObject, ParsingFailure }
+import io.circe.{ Json, JsonObject }
 import io.circe.parser._
-
-import scala.language.implicitConversions
-
-import scala.util.{ Try, Success, Failure }
-import scala.concurrent.Future
 
 trait Router extends RPCServer with PathMacro with MetaDataMacro {
   def tp: Seq[String]
