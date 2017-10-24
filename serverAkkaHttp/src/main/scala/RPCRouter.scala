@@ -16,7 +16,7 @@ import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
 import FailSupport._
 
-import io.circe.{ Json, ParsingFailure }
+import io.circe.{ Json, JsonObject, ParsingFailure }
 import io.circe.parser._
 
 import scala.language.implicitConversions
@@ -72,7 +72,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
 
   //Generates POST requests
   private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route = {
-    (pathPrefix(operationName(operationFullName, methodMetaData)) & pathEnd & post & entity(as[Json])) { request =>
+    (pathPrefix(operationName(operationFullName, methodMetaData)) & pathEnd & post & entity(as[JsonObject])) { request =>
       requestToken { token =>
         val appliedRequest = Try(routes(autowire.Core.Request(
           path = operationFullName.split("""\."""),
@@ -87,8 +87,8 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
     }
   }
 
-  def commandArgs(request: Json, token: Option[String]): Map[String, Json] =
-    request.as[Map[String, Json]].right.get ++ token.map(tokenAsArg)
+  def commandArgs(request: JsonObject, token: Option[String]): Map[String, Json] =
+    request.toMap ++ token.map(tokenAsArg)
 
   private[this] def parseJsonOrString(s: String): Json =
     parse(s).getOrElse(Json.fromString(s))
