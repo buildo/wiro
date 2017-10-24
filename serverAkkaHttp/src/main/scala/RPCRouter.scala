@@ -62,7 +62,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
       requestToken { token =>
         val appliedRequest = Try(routes(autowire.Core.Request(
           path = operationPath(operationFullName),
-          args = queryArgs(params, token)
+          args = params.mapValues(parseJsonOrString) ++ token.map(tokenAsArg)
         )))
 
         appliedRequest match {
@@ -79,7 +79,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
       requestToken { token =>
         val appliedRequest = Try(routes(autowire.Core.Request(
           path = operationPath(operationFullName),
-          args = commandArgs(request, token)
+          args = request.toMap ++ token.map(tokenAsArg)
         )))
 
         appliedRequest match {
@@ -90,14 +90,9 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
     }
   }
 
-  def commandArgs(request: JsonObject, token: Option[String]): Map[String, Json] =
-    request.toMap ++ token.map(tokenAsArg)
 
   private[this] def parseJsonOrString(s: String): Json =
     parse(s).getOrElse(Json.fromString(s))
-
-  def queryArgs(params: Map[String, String], token: Option[String]): Map[String, Json] =
-    params.mapValues(parseJsonOrString) ++ token.map(tokenAsArg)
 
   private[this] def tokenAsArg(token: String): (String, Json) =
     "token" -> Json.obj("token" -> Json.fromString(token))
