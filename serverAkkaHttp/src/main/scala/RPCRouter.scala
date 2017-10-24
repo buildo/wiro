@@ -64,15 +64,10 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route = {
     (routePathPrefix(operationFullName, methodMetaData) & pathEnd & get & parameterMap) { params =>
       requestToken { token =>
-        val appliedRequest = Try(routes(autowireRequest(
+        Either.catchNonFatal(routes(autowireRequest(
           operationFullName,
           params.mapValues(parseJsonOrString) ++ token.map(tokenAsArg)
-        )))
-
-        appliedRequest match {
-          case Success(res) => complete(res)
-          case Failure(f) => handleUnwrapErrors(f)
-        }
+        ))).fold(handleUnwrapErrors, result => complete(result))
       }
     }
   }
@@ -84,15 +79,10 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route = {
     (routePathPrefix(operationFullName, methodMetaData) & pathEnd & post & entity(as[JsonObject])) { request =>
       requestToken { token =>
-        val appliedRequest = Try(routes(autowireRequest(
+        Either.catchNonFatal(routes(autowireRequest(
           operationFullName,
           request.toMap ++ token.map(tokenAsArg)
-        )))
-
-        appliedRequest match {
-          case Success(res) => complete(res)
-          case Failure(f) => handleUnwrapErrors(f)
-        }
+        ))).fold(handleUnwrapErrors, result => complete(result))
       }
     }
   }
