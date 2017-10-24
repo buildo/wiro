@@ -51,14 +51,17 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
     }
   }
 
+  private[this] def operationPath(operationFullName: String): Array[String] =
+    operationFullName.split('.')
+
   private[this] def operationName(operationFullName: String, methodMetaData: MethodMetaData): String =
-    methodMetaData.operationType.name.getOrElse(operationFullName.split("""\.""").last)
+    methodMetaData.operationType.name.getOrElse(operationPath(operationFullName).last)
 
   private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route = {
     (pathPrefix(operationName(operationFullName, methodMetaData)) & pathEnd & get & parameterMap) { params =>
       requestToken { token =>
         val appliedRequest = Try(routes(autowire.Core.Request(
-          path = operationFullName.split("""\."""),
+          path = operationPath(operationFullName),
           args = queryArgs(params, token)
         )))
 
@@ -75,7 +78,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
     (pathPrefix(operationName(operationFullName, methodMetaData)) & pathEnd & post & entity(as[JsonObject])) { request =>
       requestToken { token =>
         val appliedRequest = Try(routes(autowire.Core.Request(
-          path = operationFullName.split("""\."""),
+          path = operationPath(operationFullName),
           args = commandArgs(request, token)
         )))
 
