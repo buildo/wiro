@@ -57,6 +57,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   private[this] def operationName(operationFullName: String, methodMetaData: MethodMetaData): String =
     methodMetaData.operationType.name.getOrElse(operationPath(operationFullName).last)
 
+  //Generates GET requests
   private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route = {
     (routePathPrefix(operationFullName, methodMetaData) & pathEnd & get & parameterMap) { params =>
       requestToken { token =>
