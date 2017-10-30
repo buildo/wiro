@@ -28,8 +28,8 @@ class RPCClient(
   system: ActorSystem,
   materializer: ActorMaterializer,
   executionContext: ExecutionContext
-) extends autowire.Client[Json, Decoder, Encoder] {
-  private[this] val requestBuilder = new RequestBuilder(config, ctx)
+) extends autowire.Client[Json, WiroDecoder, Encoder] {
+  private[wiro] val requestBuilder = new RequestBuilder(config, ctx)
 
   def write[Result: Encoder](r: Result): Json = r.asJson
 
