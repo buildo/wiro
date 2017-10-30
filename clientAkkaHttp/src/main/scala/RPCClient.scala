@@ -33,17 +33,8 @@ class RPCClient(
 
   def write[Result: Encoder](r: Result): Json = r.asJson
 
-  def read[Result: Decoder](p: Json): Result = {
-    //This trick is required to match the result type of autowire
-    val right = Json.obj("Right" -> Json.obj("b" -> p))
-    val left = Json.obj("Left" -> Json.obj("a" -> p))
-    (left.as[Result], right.as[Result]) match {
-      case (_, Right(result)) => result
-      case (Right(result), _) => result
-      case (Left(error1), Left(error2))  =>
-        throw new Exception(error1.getMessage + error2.getMessage)
-    }
-  }
+  def read[Result: WiroDecoder](p: Json): Result =
+    implicitly[WiroDecoder[Result]].decode(p)
 
   override def doCall(autowireRequest: Request): Future[Json] =
     Http().singleRequest(requestBuilder.build(autowireRequest.path, autowireRequest.args))
