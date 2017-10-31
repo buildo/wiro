@@ -1,8 +1,9 @@
 package wiro.client.akkaHttp
 
-import io.circe.{ Decoder, Json, DecodingFailure }
-import cats.data.{ NonEmptyList,ValidatedNel }
+import cats.data.{ NonEmptyList, ValidatedNel }
 import cats.syntax.either._
+
+import io.circe.{ Decoder, DecodingFailure, Json }
 
 object FailSupport {
   implicit def wiroCanFailDecoder[T: Decoder, A: Decoder] = new WiroDecoder[Either[T, A]] {
