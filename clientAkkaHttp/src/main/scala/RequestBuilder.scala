@@ -26,8 +26,8 @@ class RequestBuilder(
     val uri = buildUri(operationName)
 
     val httpRequest = methodMetaData.operationType match {
-      case OperationType.Command(_) => commandHttpRequest(nonTokenArgs, uri)
-      case OperationType.Query(_) => queryHttpRequest(nonTokenArgs, uri)
+      case _: OperationType.Command => commandHttpRequest(nonTokenArgs, uri)
+      case _: OperationType.Query => queryHttpRequest(nonTokenArgs, uri)
     }
     handlingToken(tokenArgs, httpRequest)
   }
