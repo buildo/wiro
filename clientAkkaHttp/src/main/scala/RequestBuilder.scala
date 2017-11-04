@@ -51,22 +51,13 @@ class RequestBuilder(
     }
 
   private[this] def commandHttpRequest(nonTokenArgs: Map[String, Json], uri: Uri) = HttpRequest(
-    uri = uri,
-    method = HttpMethods.POST,
-    entity = HttpEntity(
+    method = HttpMethods.POST, uri = uri, entity = HttpEntity(
       contentType = ContentTypes.`application/json`,
       string = nonTokenArgs.asJson.noSpaces
     )
   )
 
-  private[this] def queryHttpRequest(nonTokenArgs: Map[String, Json], uri: Uri): HttpRequest = {
-    val args = nonTokenArgs.mapValues(_.noSpaces)
-    val completeUri = uri.withQuery(Query(args))
-    val method = HttpMethods.GET
-
-    HttpRequest(
-      uri = completeUri,
-      method = method
-    )
-  }
+  private[this] def queryHttpRequest(nonTokenArgs: Map[String, Json], uri: Uri) = HttpRequest(
+    method = HttpMethods.GET, uri = uri.withQuery(Query(nonTokenArgs.mapValues(_.noSpaces)))
+  )
 }
