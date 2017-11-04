@@ -50,7 +50,7 @@ class RequestBuilder(
     tokenCandidates: List[String]
   ): HttpRequest = tokenCandidates match {
     case Nil => httpRequest
-    case List(token) => httpRequest.addHeader(RawHeader("Authorization", s"Token token=$token"))
+    case List(token) => httpRequest.withHeaders(RawHeader("Authorization", s"Token token=$token"))
     case _ => throw new Exception("Only one parameter of wiro.Auth type should be provided")
   }
 
