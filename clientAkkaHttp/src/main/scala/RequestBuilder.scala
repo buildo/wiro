@@ -24,6 +24,7 @@ class RequestBuilder(
       .getOrElse(path.lastOption.getOrElse(throw new Exception("Couldn't find appropriate method path")))
 
     val (tokenArgs, nonTokenArgs) = splitTokenArgs(args)
+    val tokenHeader = handleAuth(tokenArgs.values.toList)
     val uri = buildUri(operationName)
 
     val httpRequest = methodMetaData.operationType match {
@@ -31,7 +32,7 @@ class RequestBuilder(
       case _: OperationType.Query => queryHttpRequest(nonTokenArgs, uri)
     }
 
-    handlingToken(httpRequest, tokenArgs.values.toList)
+    httpRequest.withHeaders(tokenHeader)
   }
 
   private[this] def buildUri(operationName: String) = Uri(
@@ -42,14 +43,12 @@ class RequestBuilder(
   private[this] def splitTokenArgs(args: Map[String, Json]): (Map[String, Json], Map[String, Json]) =
     args.partition { case (_, value) => value.as[wiro.Auth].isRight }
 
-  private[this] def handlingToken(
-    httpRequest: HttpRequest,
-    tokenCandidates: List[Json]
-  ): HttpRequest = tokenCandidates.map(_.as[wiro.Auth]) match {
-    case Nil => httpRequest
-    case List(Right(auth)) => httpRequest.withHeaders(RawHeader("Authorization", s"Token token=${auth.token}"))
-    case _ => throw new Exception("Only one parameter of wiro.Auth type should be provided")
-  }
+  private[this] def handleAuth(tokenCandidates: List[Json]): List[RawHeader] =
+    if (tokenCandidates.length > 1)
+      throw new Exception("Only one parameter of wiro.Auth type should be provided")
+    else tokenCandidates.map(_.as[wiro.Auth]).collect {
+      case Right(wiro.Auth(token)) => RawHeader("Authorization", s"Token token=$token")
+    }
 
   private[this] def commandHttpRequest(nonTokenArgs: Map[String, Json], uri: Uri) = HttpRequest(
     uri = uri,
