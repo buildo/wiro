@@ -39,11 +39,8 @@ class RequestBuilder(
     authority = Authority(host = Host(config.host), port = config.port)
   )
 
-  private[this] def splitTokenArgs(args: Map[String, Json]): (Map[String, Json], Map[String, Json]) = {
-    val tokenCandidates = args.filter { case (_, v) => v.as[wiro.Auth].isRight }
-    val nonTokenArgs = args.filter { case (_, v) => v.as[wiro.Auth].isLeft }
-    (tokenCandidates, nonTokenArgs)
-  }
+  private[this] def splitTokenArgs(args: Map[String, Json]): (Map[String, Json], Map[String, Json]) =
+    args.partition { case (_, value) => value.as[wiro.Auth].isRight }
 
   private[this] def handlingToken(
     httpRequest: HttpRequest,
