@@ -3,7 +3,8 @@ package client.akkaHttp
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
-import java.net.URLEncoder
+import akka.http.scaladsl.model.Uri.{ Host, Authority, Path, Query }
+import akka.http.scaladsl.model.Uri
 
 import io.circe._
 import io.circe.generic.auto._
@@ -21,13 +22,18 @@ class RequestBuilder(
       .getOrElse(completePath, throw new Exception(s"Couldn't find metadata about method $completePath"))
     val operationName = methodMetaData.operationType.name
       .getOrElse(path.lastOption.getOrElse(throw new Exception("Couldn't find appropriate method path")))
-    val uri = s"http://${config.host}:${config.port}/${ctx.path}/$operationName"
+    val uri = buildUri(operationName)
 
     methodMetaData.operationType match {
       case OperationType.Command(_) => commandHttpRequest(args, uri)
       case OperationType.Query(_) => queryHttpRequest(args, uri)
     }
   }
+
+  private[this] def buildUri(operationName: String) = Uri(
+    scheme = "http", path = Path / ctx.path / operationName,
+    authority = Authority(host = Host(config.host), port = config.port)
+  )
 
   private[this] def splitTokenArgs(args: Map[String, Json]): (List[String], Map[String, Json]) = {
     val tokenCandidates = args.map { case (_, v) => v.as[wiro.Auth] }.collect { case Right(result) => result.token }.toList
@@ -51,7 +57,7 @@ class RequestBuilder(
     }
   }
 
-  private[this] def commandHttpRequest(args: Map[String, Json], uri: String): HttpRequest =
+  private[this] def commandHttpRequest(args: Map[String, Json], uri: Uri): HttpRequest =
     handlingToken(args) { nonTokenArgs =>
       HttpRequest(
         uri = uri,
@@ -63,10 +69,10 @@ class RequestBuilder(
       )
     }
 
-  private[this] def queryHttpRequest(args: Map[String, Json], uri: String): HttpRequest =
+  private[this] def queryHttpRequest(args: Map[String, Json], uri: Uri): HttpRequest =
     handlingToken(args) { nonTokenArgs =>
-      val args = nonTokenArgs.map { case (name, value) => s"$name=${URLEncoder.encode(value.noSpaces)}" }.mkString("&")
-      val completeUri = s"$uri?$args"
+      val args = nonTokenArgs.mapValues(_.noSpaces)
+      val completeUri = uri.withQuery(Query(args))
       val method = HttpMethods.GET
 
       HttpRequest(
