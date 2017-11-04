@@ -31,7 +31,7 @@ class RequestBuilder(
       case _: OperationType.Query => queryHttpRequest(nonTokenArgs, uri)
     }
 
-    handlingToken(httpRequest, tokenArgs)
+    handlingToken(httpRequest, tokenArgs.values.toList)
   }
 
   private[this] def buildUri(operationName: String) = Uri(
@@ -39,18 +39,18 @@ class RequestBuilder(
     authority = Authority(host = Host(config.host), port = config.port)
   )
 
-  private[this] def splitTokenArgs(args: Map[String, Json]): (List[String], Map[String, Json]) = {
-    val tokenCandidates = args.map { case (_, v) => v.as[wiro.Auth] }.collect { case Right(result) => result.token }.toList
+  private[this] def splitTokenArgs(args: Map[String, Json]): (Map[String, Json], Map[String, Json]) = {
+    val tokenCandidates = args.filter { case (_, v) => v.as[wiro.Auth].isRight }
     val nonTokenArgs = args.filter { case (_, v) => v.as[wiro.Auth].isLeft }
     (tokenCandidates, nonTokenArgs)
   }
 
   private[this] def handlingToken(
     httpRequest: HttpRequest,
-    tokenCandidates: List[String]
-  ): HttpRequest = tokenCandidates match {
+    tokenCandidates: List[Json]
+  ): HttpRequest = tokenCandidates.map(_.as[wiro.Auth]) match {
     case Nil => httpRequest
-    case List(token) => httpRequest.withHeaders(RawHeader("Authorization", s"Token token=$token"))
+    case List(Right(auth)) => httpRequest.withHeaders(RawHeader("Authorization", s"Token token=${auth.token}"))
     case _ => throw new Exception("Only one parameter of wiro.Auth type should be provided")
   }
 
