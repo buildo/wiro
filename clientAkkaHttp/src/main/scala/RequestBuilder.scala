@@ -1,10 +1,9 @@
 package wiro
 package client.akkaHttp
 
-import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.{ ContentTypes, HttpEntity, HttpMethods, HttpRequest, Uri }
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model.Uri.{ Host, Authority, Path, Query }
-import akka.http.scaladsl.model.Uri
 
 import io.circe._
 import io.circe.generic.auto._
