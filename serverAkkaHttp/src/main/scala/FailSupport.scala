@@ -9,9 +9,6 @@ object FailSupport {
   }
 
   implicit def wiroCanFailEncoder[T: ToHttpResponse, A: Encoder] = new WiroEncoder[Either[T, A]] {
-    def encode(d: Either[T, A]): Json = d match {
-      case Right(result) => result.asJson
-      case Left(error) => throw FailException(error)
-    }
+    def encode(d: Either[T, A]): Json = d.fold(error => throw FailException(error), _.asJson)
   }
 }
