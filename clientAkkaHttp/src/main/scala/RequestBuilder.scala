@@ -1,9 +1,9 @@
 package wiro
 package client.akkaHttp
 
-import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.{ ContentTypes, HttpEntity, HttpMethods, HttpRequest, Uri }
 import akka.http.scaladsl.model.headers.RawHeader
-import java.net.URLEncoder
+import akka.http.scaladsl.model.Uri.{ Host, Authority, Path, Query }
 
 import io.circe._
 import io.circe.generic.auto._
@@ -21,57 +21,42 @@ class RequestBuilder(
       .getOrElse(completePath, throw new Exception(s"Couldn't find metadata about method $completePath"))
     val operationName = methodMetaData.operationType.name
       .getOrElse(path.lastOption.getOrElse(throw new Exception("Couldn't find appropriate method path")))
-    val uri = s"http://${config.host}:${config.port}/${ctx.path}/$operationName"
 
-    methodMetaData.operationType match {
-      case OperationType.Command(_) => commandHttpRequest(args, uri)
-      case OperationType.Query(_) => queryHttpRequest(args, uri)
+    val (tokenArgs, nonTokenArgs) = splitTokenArgs(args)
+    val tokenHeader = handleAuth(tokenArgs.values.toList)
+    val uri = buildUri(operationName)
+
+    val httpRequest = methodMetaData.operationType match {
+      case _: OperationType.Command => commandHttpRequest(nonTokenArgs, uri)
+      case _: OperationType.Query => queryHttpRequest(nonTokenArgs, uri)
     }
+
+    httpRequest.withHeaders(tokenHeader)
   }
 
-  private[this] def splitTokenArgs(args: Map[String, Json]): (List[String], Map[String, Json]) = {
-    val tokenCandidates = args.map { case (_, v) => v.as[wiro.Auth] }.collect { case Right(result) => result.token }.toList
-    val nonTokenArgs = args.filter { case (_, v) => v.as[wiro.Auth].isLeft }
-    (tokenCandidates, nonTokenArgs)
-  }
+  private[this] def buildUri(operationName: String) = Uri(
+    scheme = "http", path = Path / ctx.path / operationName,
+    authority = Authority(host = Host(config.host), port = config.port)
+  )
 
-  private[this] def handlingToken(
-    args: Map[String, Json]
-  )(
-    httpRequest: (Map[String, Json]) => HttpRequest
-  ): HttpRequest = {
-    val (tokenCandidates, nonTokenArgs) = splitTokenArgs(args)
-    val maybeToken =
-      if (tokenCandidates.length > 1) throw new Exception("Only one parameter of wiro.Auth type should be provided")
-      else tokenCandidates.headOption
+  private[this] def splitTokenArgs(args: Map[String, Json]): (Map[String, Json], Map[String, Json]) =
+    args.partition { case (_, value) => value.as[wiro.Auth].isRight }
 
-    maybeToken match {
-      case Some(token) => httpRequest(nonTokenArgs).addHeader(RawHeader("Authorization", s"Token token=$token"))
-      case None => httpRequest(nonTokenArgs)
-    }
-  }
-
-  private[this] def commandHttpRequest(args: Map[String, Json], uri: String): HttpRequest =
-    handlingToken(args) { nonTokenArgs =>
-      HttpRequest(
-        uri = uri,
-        method = HttpMethods.POST,
-        entity = HttpEntity(
-          contentType = ContentTypes.`application/json`,
-          string = nonTokenArgs.asJson.noSpaces
-        )
-      )
+  private[this] def handleAuth(tokenCandidates: List[Json]): List[RawHeader] =
+    if (tokenCandidates.length > 1)
+      throw new Exception("Only one parameter of wiro.Auth type should be provided")
+    else tokenCandidates.map(_.as[wiro.Auth]).collect {
+      case Right(wiro.Auth(token)) => RawHeader("Authorization", s"Token token=$token")
     }
 
-  private[this] def queryHttpRequest(args: Map[String, Json], uri: String): HttpRequest =
-    handlingToken(args) { nonTokenArgs =>
-      val args = nonTokenArgs.map { case (name, value) => s"$name=${URLEncoder.encode(value.noSpaces)}" }.mkString("&")
-      val completeUri = s"$uri?$args"
-      val method = HttpMethods.GET
+  private[this] def commandHttpRequest(nonTokenArgs: Map[String, Json], uri: Uri) = HttpRequest(
+    method = HttpMethods.POST, uri = uri, entity = HttpEntity(
+      contentType = ContentTypes.`application/json`,
+      string = nonTokenArgs.asJson.noSpaces
+    )
+  )
 
-      HttpRequest(
-        uri = completeUri,
-        method = method
-      )
-    }
+  private[this] def queryHttpRequest(nonTokenArgs: Map[String, Json], uri: Uri) = HttpRequest(
+    method = HttpMethods.GET, uri = uri.withQuery(Query(nonTokenArgs.mapValues(_.noSpaces)))
+  )
 }
