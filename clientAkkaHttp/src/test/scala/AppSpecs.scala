@@ -1,19 +1,19 @@
 package wiro
 
-import wiro.client.akkaHttp._
-import wiro.client.akkaHttp.FailSupport._
-
-import autowire._
-
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import org.scalatest.{ Matchers, WordSpec }
-import org.scalatest.concurrent.ScalaFutures
+import autowire._
 
 import io.circe._
 import io.circe.generic.auto._
 
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.{ Matchers, WordSpec }
+
+import wiro.client.akkaHttp._
+import wiro.client.akkaHttp.FailSupport._
+import wiro.TestController.{ UserController, User, userRouter }
+
 class WiroSpec extends WordSpec with Matchers with RPCRouteTest with ScalatestRouteTest with ClientDerivationModule with ScalaFutures {
-  import wiro.TestController.{ UserController, User, userRouter }
   private[this] val rpcClient = new RPCClientTest(
     deriveClientContext[UserController], userRouter.buildRoute
   ).apply[UserController]
