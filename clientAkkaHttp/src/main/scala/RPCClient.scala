@@ -4,6 +4,7 @@ package client.akkaHttp
 import akka.actor.ActorSystem
 
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.{ HttpRequest, HttpResponse }
 import akka.http.scaladsl.unmarshalling.Unmarshal
 
 import akka.stream.ActorMaterializer
@@ -36,7 +37,17 @@ class RPCClient(
   def read[Result: WiroDecoder](p: Json): Result =
     implicitly[WiroDecoder[Result]].decode(p)
 
-  override def doCall(autowireRequest: Request): Future[Json] =
-    Http().singleRequest(requestBuilder.build(autowireRequest.path, autowireRequest.args))
-      .flatMap{ response => Unmarshal(response.entity).to[Json] }
+  private[wiro] def buildRequest(autowireRequest: Request): HttpRequest =
+    requestBuilder.build(autowireRequest.path, autowireRequest.args)
+
+  private[wiro] def unmarshalResponse(response: HttpResponse): Future[Json] =
+    Unmarshal(response.entity).to[Json]
+
+  private[wiro] def doHttpRequest(request: HttpRequest): Future[HttpResponse] =
+    Http().singleRequest(request)
+
+  override def doCall(autowireRequest: Request): Future[Json] = {
+    val httpRequest = buildRequest(autowireRequest)
+    doHttpRequest(httpRequest).flatMap(unmarshalResponse)
+  }
 }
