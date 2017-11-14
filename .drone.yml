@@ -1,8 +1,13 @@
 build:
   wiro:
     image: hseeberger/scala-sbt
+    environment:
+      - CODACY_PROJECT_TOKEN="$$CODACY_PROJECT_TOKEN"
     commands:
-      - sbt test -Dsbt.ivy.home=/drone/.ivy
+      - sbt clean coverage test -Dsbt.ivy.home=/drone/.ivy
+      - sbt coverageReport
+      - sbt coverageAggregate
+      - sbt codacyCoverage
 
 cache:
   mount:
