@@ -12,7 +12,7 @@ import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
 import FailSupport._
 
-import io.circe.{ Json, JsonObject }
+import io.circe.{ Json, JsonObject, Printer }
 import io.circe.parser._
 
 trait Router extends RPCServer with PathMacro with MetaDataMacro {
@@ -20,6 +20,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   def methodsMetaData: Map[String, MethodMetaData]
   def routes: autowire.Core.Router[Json]
   def path: String = tp.last
+  implicit def printer: Printer = Printer.noSpaces
 
   def buildRoute: Route = handleExceptions(exceptionHandler) {
     pathPrefix(path) {
