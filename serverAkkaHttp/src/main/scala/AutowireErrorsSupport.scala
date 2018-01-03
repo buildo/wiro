@@ -6,25 +6,30 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.headers.HttpChallenges
 import akka.http.scaladsl.model._
 
+import com.typesafe.scalalogging.LazyLogging
+
 import io.circe.{ DecodingFailure, CursorOp }
 
-object AutowireErrorSupport {
+object AutowireErrorSupport extends LazyLogging {
   def handleUnwrapErrors(
     throwable: Throwable
   ) = throwable match {
     case autowire.Error.InvalidInput(xs) =>
       handleAutowireInputErrors(xs)
     case e: autowire.Error.InvalidInput =>
+      logger.info(s"received input is not valid, cannot process entity: ${e.getMessage}")
       complete(HttpResponse(
         status = StatusCodes.UnprocessableEntity,
         entity = "Unprocessable entity"
       ))
-    case _: scala.MatchError =>
+    case matchError: scala.MatchError =>
+      logger.info(s"match error found: ${matchError.getMessage}, route does not exist, returning 404")
       complete(HttpResponse(
         status = StatusCodes.NotFound,
         entity = "Operation not found"
       ))
-    case _: Exception =>
+    case e: Exception =>
+      logger.error(s"unexpected error: ${e.getMessage}, returning 500")
       complete(HttpResponse(
         status = StatusCodes.InternalServerError,
         entity = "Internal Error"
@@ -34,22 +39,30 @@ object AutowireErrorSupport {
   private[this] def handleMissingParamErrors(
     param: String
   ): StandardRoute = param match {
-    case "token" => reject(AuthenticationFailedRejection(
-      cause = CredentialsRejected,
-      challenge = HttpChallenges.basic("api")
-    ))
-    case "actionQuery" => complete(HttpResponse(
-      status = StatusCodes.MethodNotAllowed,
-      entity = s"Method not allowed"
-    ))
-    case "actionCommand" => complete(HttpResponse(
-      status = StatusCodes.MethodNotAllowed,
-      entity = s"Method not allowed"
-    ))
-    case _ => complete(HttpResponse(
-      status = StatusCodes.UnprocessableEntity,
-      entity = s"Missing parameter $param from input"
-    ))
+    case "token" =>
+      logger.info("couldn't find token parameter, rejecting request as unauthorized")
+      reject(AuthenticationFailedRejection(
+        cause = CredentialsRejected,
+        challenge = HttpChallenges.basic("api")
+      ))
+    case "actionQuery" =>
+      logger.info("required query parameter is missing, method is not allowed")
+      complete(HttpResponse(
+        status = StatusCodes.MethodNotAllowed,
+        entity = s"Method not allowed"
+      ))
+    case "actionCommand" =>
+      logger.info("required command parameter is missing, method is not allowed")
+      complete(HttpResponse(
+        status = StatusCodes.MethodNotAllowed,
+        entity = s"Method not allowed"
+      ))
+    case _ =>
+      logger.info(s"missing parameter $param from input")
+      complete(HttpResponse(
+        status = StatusCodes.UnprocessableEntity,
+        entity = s"Missing parameter '$param' from input"
+      ))
   }
 
   private[this] def handleAutowireInputErrors(
@@ -57,7 +70,8 @@ object AutowireErrorSupport {
   ): StandardRoute = xs match {
     case autowire.Error.Param.Missing(param) =>
       handleMissingParamErrors(param)
-    case autowire.Error.Param.Invalid(param, ex) => {
+    case error@autowire.Error.Param.Invalid(param, ex) => {
+      logger.info(s"the received parameter '$param' is invalid: ${ex.getMessage}")
       ex match {
         case DecodingFailure(tpe, history) =>
           val path = CursorOp.opsToPath(history)
@@ -68,7 +82,7 @@ object AutowireErrorSupport {
         case _ =>
           complete(HttpResponse(
             status = StatusCodes.UnprocessableEntity,
-            entity = s"Missing parameter $param from input"
+            entity = s"Missing parameter '$param' from input"
           ))
       }
     }
