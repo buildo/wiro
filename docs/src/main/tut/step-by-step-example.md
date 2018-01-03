@@ -159,6 +159,8 @@ import wiro.client.akkaHttp._
 import autowire._
 
 object UserClient extends App with ClientDerivationModule {
+  import FailSupport._
+
   val config = Config("localhost", 8080)
 
   implicit val system = ActorSystem()
