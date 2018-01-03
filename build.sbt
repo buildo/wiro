@@ -17,13 +17,20 @@ val circeDependencies = Seq(
   "io.circe" %% "circe-parser"
 ).map(_ % circeVersion)
 
+val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2"
+
+val loggingBackendDependencies = Seq(
+  "ch.qos.logback" % "logback-classic" % "1.2.3" % "test"
+)
+
 val commonDependencies = Seq(
+  scalaLogging,
   autowire,
   akkaHttp,
   akkaHttpCirce,
   akkaHttpTestKit,
   scalaTest
-) ++ circeDependencies
+) ++ circeDependencies ++ loggingBackendDependencies
 
 lazy val commonSettings = Seq(
   bintrayOrganization := Some("buildo"),
