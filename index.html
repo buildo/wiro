@@ -10,7 +10,10 @@
 
 <p>How to add dependency:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"io.buildo"</span> <span class="o">%%</span> <span class="s">"wiro-http-server"</span> <span class="o">%</span> <span class="s">"X.X.X"</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">++=</span> <span class="nc">Seq</span><span class="o">(</span>
+  <span class="s">"io.buildo"</span> <span class="o">%%</span> <span class="s">"wiro-http-server"</span> <span class="o">%</span> <span class="s">"X.X.X"</span><span class="o">,</span>
+  <span class="s">"org.slf4j"</span> <span class="o">%</span> <span class="s">"slf4j-nop"</span> <span class="o">%</span> <span class="s">"1.6.4"</span>
+<span class="o">)</span>
 </code></pre>
 </div>
 
@@ -22,14 +25,16 @@
 </code></pre>
 </div>
 
+<p>Wiro uses scala-logging, so you need to include an SLF4J backend. We include slf4j-nop to disable logging, but you can replace this with the logging framework you prefer (log4j2, logback).</p>
+
 <h2 id="why-wiro">Why Wiro?</h2>
 
 <p>Wiro is a lightweight Scala library to automatically generate http routes from scala traits.
-At buildo, we don’t like writing routes. Writing routes is often an error-prone and frustrating. Futhermore, in most of our use-cases, it can be completely automatized.</p>
+At buildo, we don’t like writing routes. Writing routes is an error-prone and frustrating procedure. Futhermore, in most of our use-cases, it can be completely automatized.</p>
 
 <h2 id="features">Features</h2>
 
-<p>Here are the most relevant features of Wiro:</p>
+<p>Here is the list of the most relevant features of Wiro:</p>
 
 <ul>
   <li>Automatic generation of http routes from decorated Scala traits</li>
@@ -203,6 +208,8 @@ inside the <code class="highlighter-rouge">controllers</code> object:</p>
 <span class="k">import</span> <span class="nn">autowire._</span>
 
 <span class="k">object</span> <span class="nc">UserClient</span> <span class="k">extends</span> <span class="nc">App</span> <span class="k">with</span> <span class="nc">ClientDerivationModule</span> <span class="o">{</span>
+  <span class="k">import</span> <span class="nn">FailSupport._</span>
+
   <span class="k">val</span> <span class="n">config</span> <span class="k">=</span> <span class="nc">Config</span><span class="o">(</span><span class="s">"localhost"</span><span class="o">,</span> <span class="mi">8080</span><span class="o">)</span>
 
   <span class="k">implicit</span> <span class="k">val</span> <span class="n">system</span> <span class="k">=</span> <span class="nc">ActorSystem</span><span class="o">()</span>
