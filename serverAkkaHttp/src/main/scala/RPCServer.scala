@@ -1,12 +1,14 @@
 package wiro
 package server.akkaHttp
 
-import akka.actor.{ Actor, ActorLogging, ActorSystem, Props, Status }
+import akka.actor.{ Actor, ActorSystem, Props, Status }
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.pattern.pipe
 import akka.stream.ActorMaterializer
+
+import com.typesafe.scalalogging.LazyLogging
 
 import wiro.server.akkaHttp.{ Router => WiroRouter }
 
@@ -31,12 +33,12 @@ class HttpRPCServerActor(
 )(implicit
   system: ActorSystem,
   materializer: ActorMaterializer
-) extends Actor with ActorLogging {
+) extends Actor with LazyLogging {
   import system.dispatcher
 
   override def receive = {
-    case binding: Http.ServerBinding => log.info("Binding on {}", binding.localAddress)
-    case Status.Failure(cause) => log.error(cause, s"Unable to bind to ${config.host}:${config.port}")
+    case binding: Http.ServerBinding => logger.info("Binding on {}", binding.localAddress)
+    case Status.Failure(cause) => logger.error("Unable to bind to ${config.host}:${config.port}, $cause")
   }
 
   Http()
