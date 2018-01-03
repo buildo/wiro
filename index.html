@@ -17,6 +17,8 @@
 </code></pre>
 </div>
 
+<p>Wiro uses scala-logging, so you need to include an SLF4J backend. We include slf4j-nop to disable logging, but you can replace this with the logging framework you prefer (log4j2, logback).</p>
+
 <p>Wiro uses scala macro annotations.  You’ll also need to include the <a href="http://docs.scala-lang.org/overviews/macros/paradise.html">Macro Paradise</a> compiler plugin in your build:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">addCompilerPlugin</span><span class="o">(</span>
@@ -24,8 +26,6 @@
 <span class="o">)</span>
 </code></pre>
 </div>
-
-<p>Wiro uses scala-logging, so you need to include an SLF4J backend. We include slf4j-nop to disable logging, but you can replace this with the logging framework you prefer (log4j2, logback).</p>
 
 <h2 id="why-wiro">Why Wiro?</h2>
 
