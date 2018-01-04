@@ -15,7 +15,9 @@ import FailSupport._
 import io.circe.{ Json, JsonObject, Printer }
 import io.circe.parser._
 
-trait Router extends RPCServer with PathMacro with MetaDataMacro {
+import com.typesafe.scalalogging.LazyLogging
+
+trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLogging {
   def tp: Seq[String]
   def methodsMetaData: Map[String, MethodMetaData]
   def routes: autowire.Core.Router[Json]
@@ -32,7 +34,9 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro {
   }
 
   def exceptionHandler = ExceptionHandler {
-    case f: FailException[_] => complete(f.response)
+    case f: FailException[_] =>
+      logger.error(f.getMessage)
+      complete(f.response)
   }
 
   private[this] val requestToken: Directive1[Option[String]] = {
