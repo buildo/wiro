@@ -17,6 +17,8 @@ import io.circe.parser._
 
 import com.typesafe.scalalogging.LazyLogging
 
+import java.io.{ StringWriter, PrintWriter }
+
 trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLogging {
   def tp: Seq[String]
   def methodsMetaData: Map[String, MethodMetaData]
@@ -35,8 +37,16 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
 
   def exceptionHandler = ExceptionHandler {
     case f: FailException[_] =>
-      logger.error(f.getMessage)
+      logger.error(f.getStackTraceAsString())
       complete(f.response)
+  }
+
+  implicit class GettablePrintStackTraceException(t: Throwable) {
+    def getStackTraceAsString(): String = {
+      val sw = new StringWriter
+      t.printStackTrace(new PrintWriter(sw))
+      sw.toString
+    }
   }
 
   private[this] val requestToken: Directive1[Option[String]] = {
