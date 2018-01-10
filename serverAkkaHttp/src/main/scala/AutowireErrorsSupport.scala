@@ -17,19 +17,19 @@ object AutowireErrorSupport extends LazyLogging {
     case autowire.Error.InvalidInput(xs) =>
       handleAutowireInputErrors(xs)
     case e: autowire.Error.InvalidInput =>
-      logger.info(s"received input is not valid, cannot process entity: ${e.getMessage}")
+      logger.info(s"received input is not valid, cannot process entity", e)
       complete(HttpResponse(
         status = StatusCodes.UnprocessableEntity,
         entity = "Unprocessable entity"
       ))
-    case matchError: scala.MatchError =>
-      logger.info(s"match error found: ${matchError.getMessage}, route does not exist, returning 404")
+    case e: scala.MatchError =>
+      logger.info(s"match error found, route does not exist, returning 404", e)
       complete(HttpResponse(
         status = StatusCodes.NotFound,
         entity = "Operation not found"
       ))
     case e: Exception =>
-      logger.error(s"unexpected error: ${e.getMessage}, returning 500")
+      logger.error(s"unexpected error, returning 500", e)
       complete(HttpResponse(
         status = StatusCodes.InternalServerError,
         entity = "Internal Error"
@@ -70,9 +70,9 @@ object AutowireErrorSupport extends LazyLogging {
   ): StandardRoute = xs match {
     case autowire.Error.Param.Missing(param) =>
       handleMissingParamErrors(param)
-    case error@autowire.Error.Param.Invalid(param, ex) => {
-      logger.info(s"the received parameter '$param' is invalid: ${ex.getMessage}")
-      ex match {
+    case error@autowire.Error.Param.Invalid(param, e) => {
+      logger.info(s"the received parameter '$param' is invalid", e)
+      e match {
         case DecodingFailure(tpe, history) =>
           val path = CursorOp.opsToPath(history)
           complete(HttpResponse(

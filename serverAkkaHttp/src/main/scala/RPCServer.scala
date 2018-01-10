@@ -37,8 +37,8 @@ class HttpRPCServerActor(
   import system.dispatcher
 
   override def receive = {
-    case binding: Http.ServerBinding => logger.info("Binding on {}", binding.localAddress)
-    case Status.Failure(cause) => logger.error("Unable to bind to ${config.host}:${config.port}, $cause")
+    case binding: Http.ServerBinding => logger.info(s"Binding on {}", binding.localAddress)
+    case Status.Failure(cause) => logger.error("Unable to bind to ${config.host}:${config.port}", cause)
   }
 
   Http()
