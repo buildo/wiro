@@ -34,9 +34,9 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
   }
 
   def exceptionHandler = ExceptionHandler {
-    case f: FailException[_] =>
-      logger.error(f.getMessage)
-      complete(f.response)
+    case e: FailException[_] =>
+      logger.error(e.getMessage, e)
+      complete(e.response)
   }
 
   private[this] val requestToken: Directive1[Option[String]] = {
