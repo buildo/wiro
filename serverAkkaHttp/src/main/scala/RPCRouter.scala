@@ -4,7 +4,7 @@ package server.akkaHttp
 import AutowireErrorSupport._
 
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{ Directive0, Directive1, ExceptionHandler, Route }
+import akka.http.scaladsl.server.{ Directive0, Directive1, ExceptionHandler, Route, PathMatcher }
 
 import cats.syntax.either._
 
@@ -16,6 +16,7 @@ import io.circe.{ Json, JsonObject, Printer }
 import io.circe.parser._
 
 import com.typesafe.scalalogging.LazyLogging
+import pureconfig.loadConfigOrThrow
 
 trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLogging {
   def tp: Seq[String]
