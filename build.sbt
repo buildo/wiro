@@ -8,6 +8,7 @@ val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.3"
 val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.19.0"
 val akkaHttpTestKit = "com.typesafe.akka" %% "akka-http-testkit" % "10.0.3" % "test"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.9.0"
 
 val circeVersion = "0.9.0"
 
@@ -29,7 +30,8 @@ val commonDependencies = Seq(
   akkaHttp,
   akkaHttpCirce,
   akkaHttpTestKit,
-  scalaTest
+  scalaTest,
+  pureConfig
 ) ++ circeDependencies ++ loggingBackendDependencies
 
 lazy val commonSettings = Seq(
