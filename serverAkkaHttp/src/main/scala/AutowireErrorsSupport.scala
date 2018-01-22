@@ -41,9 +41,9 @@ object AutowireErrorSupport extends LazyLogging {
   ): StandardRoute = param match {
     case "token" =>
       logger.info("couldn't find token parameter, rejecting request as unauthorized")
-      reject(AuthenticationFailedRejection(
-        cause = CredentialsRejected,
-        challenge = HttpChallenges.basic("api")
+      complete(HttpResponse(
+        status = StatusCodes.Forbidden,
+        entity = s"Unauthorized"
       ))
     case "actionQuery" =>
       logger.info("required query parameter is missing, method is not allowed")
