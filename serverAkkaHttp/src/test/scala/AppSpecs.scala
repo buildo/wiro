@@ -193,7 +193,7 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
     "it's authenticated" should {
       "block user without proper token" in {
         Get("/user/nobodyCannaCrossIt") ~> userRouter.buildRoute ~> check {
-          status should be (Unauthorized)
+          status should be (StatusCodes.Unauthorized)
         }
       }
 
