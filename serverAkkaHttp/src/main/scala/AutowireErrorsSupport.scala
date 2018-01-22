@@ -42,7 +42,7 @@ object AutowireErrorSupport extends LazyLogging {
     case "token" =>
       logger.info("couldn't find token parameter, rejecting request as unauthorized")
       complete(HttpResponse(
-        status = StatusCodes.Forbidden,
+        status = StatusCodes.Unauthorized,
         entity = s"Unauthorized"
       ))
     case "actionQuery" =>
