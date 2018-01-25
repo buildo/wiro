@@ -12,6 +12,8 @@ import com.typesafe.scalalogging.LazyLogging
 
 import wiro.server.akkaHttp.{ Router => WiroRouter }
 
+import pureconfig.loadConfigOrThrow
+
 class HttpRPCServer(
   config: Config,
   routers: List[WiroRouter],
@@ -20,9 +22,15 @@ class HttpRPCServer(
   system: ActorSystem,
   materializer: ActorMaterializer
 ) {
-  val route = routers
+  private[this] val referenceConfig = loadConfigOrThrow[ReferenceConfig]("wiro")
+  private[this] val foldedRoutes = routers
     .map(_.buildRoute)
     .foldLeft(customRoute) (_ ~ _)
+
+  val route = referenceConfig.routesPrefix match {
+    case Some(prefix) => pathPrefix(prefix) { foldedRoutes }
+    case None => foldedRoutes
+  }
 
   system.actorOf(Props(new HttpRPCServerActor(config, route)), "wiro-server")
 }

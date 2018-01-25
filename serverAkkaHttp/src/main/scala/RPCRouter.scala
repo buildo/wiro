@@ -16,7 +16,6 @@ import io.circe.{ Json, JsonObject, Printer }
 import io.circe.parser._
 
 import com.typesafe.scalalogging.LazyLogging
-import pureconfig.loadConfigOrThrow
 
 trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLogging {
   def tp: Seq[String]
@@ -24,11 +23,9 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
   def routes: autowire.Core.Router[Json]
   def path: String = tp.last
   implicit def printer: Printer = Printer.noSpaces
-  private[this] val config = loadConfigOrThrow[ReferenceConfig]("wiro")
 
   def buildRoute: Route = handleExceptions(exceptionHandler) {
-    val maybePrefix = config.routesPrefix.map(prefix => prefix / path)
-    pathPrefix(maybePrefix.getOrElse(PathMatcher(path))) {
+    pathPrefix(path) {
       methodsMetaData.map {
         case (k, v @ MethodMetaData(OperationType.Command(_))) => command(k, v)
         case (k, v @ MethodMetaData(OperationType.Query(_)))   => query(k, v)
