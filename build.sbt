@@ -1,13 +1,14 @@
-import com.typesafe.sbt.SbtSite.SiteKeys._
-import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
-
 enablePlugins(GitVersioning)
+import microsites._
 
 val autowire = "com.lihaoyi" %% "autowire" % "0.2.6"
 val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.3"
 val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.19.0"
-val akkaHttpTestKit = "com.typesafe.akka" %% "akka-http-testkit" % "10.0.3" % "test"
-val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+val akkaHttpTestKitBase = "com.typesafe.akka" %% "akka-http-testkit" % "10.0.3"
+val scalaTestBase = "org.scalatest" %% "scalatest" % "3.0.1"
+val akkaHttpTestKit = akkaHttpTestKitBase % "test"
+val scalaTest = scalaTestBase % "test"
+
 val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.9.0"
 
 val circeVersion = "0.9.0"
@@ -44,13 +45,26 @@ lazy val commonSettings = Seq(
     commonDependencies :+
     scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided",
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
-  scalacOptions += "-Xplugin-require:macroparadise",
+  scalacOptions ++= Seq(
+    "-Xplugin-require:macroparadise",
+    "-encoding", "utf8",
+    "-deprecation", "-feature", "-unchecked", "-Xlint",
+    "-language:higherKinds",
+    "-language:implicitConversions",
+    "-Xfuture",
+    "-Ywarn-dead-code",
+    "-Ywarn-numeric-widen",
+    "-Ywarn-value-discard",
+    "-Ywarn-unused",
+    "-Ywarn-unused-import",
+    "-Yrangepos"
+  ),
   releaseCrossBuild := true
 )
 
 lazy val noPublishSettings = Seq(
-  publish := (),
-  publishLocal := (),
+  publish := {},
+  publishLocal := {},
   publishArtifact := false
 )
 
@@ -92,10 +106,9 @@ lazy val examples = project
 lazy val docs = project
   .enablePlugins(MicrositesPlugin)
   .settings(moduleName := "wiro-docs")
-  .settings(ghpages.settings)
   .settings(docSettings)
-  .settings(tutScalacOptions ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
-  .settings(libraryDependencies ++= Seq(scalaTest, akkaHttpTestKit, akkaHttpCirce))
+  .settings(scalacOptions in Tut ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
+  .settings(libraryDependencies ++= Seq(scalaTestBase, akkaHttpTestKitBase, akkaHttpCirce))
   .dependsOn(serverAkkaHttp, examples)
 
 lazy val docSettings = Seq(
