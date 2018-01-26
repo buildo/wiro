@@ -52,7 +52,7 @@ object RouterDerivationMacro extends RouterDerivationModule {
     q"""
     import wiro.{ OperationType, MethodMetaData }
 
-    new Router {
+    new _root_.wiro.server.akkaHttp.Router {
       override val routes = route[$tpe]($a)
       override val methodsMetaData = deriveMetaData[$tpe]
       override val tp = typePath[$tpe]
