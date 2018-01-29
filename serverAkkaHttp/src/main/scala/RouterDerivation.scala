@@ -35,7 +35,7 @@ object RouterDerivationMacro extends RouterDerivationModule {
     q"""
     import wiro.{ OperationType, MethodMetaData }
 
-    new Router {
+    new _root_.wiro.server.akkaHttp.Router {
       override val routes = route[$tpe]($a)
       override val methodsMetaData = deriveMetaData[$tpe]
       override val tp = typePath[$tpe]
@@ -56,7 +56,7 @@ object RouterDerivationMacro extends RouterDerivationModule {
       override val routes = route[$tpe]($a)
       override val methodsMetaData = deriveMetaData[$tpe]
       override val tp = typePath[$tpe]
-      override implicit val printer = $printer
+      override implicit val printer: _root_.io.circe.Printer = $printer
       $derivePath
     }
     """
