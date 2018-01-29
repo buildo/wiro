@@ -28,7 +28,7 @@ object MetaDataMacro extends MetaDataMacro {
     import c.universe._
 
     val decls = weakTypeOf[A].decls.collect {
-      case m: MethodSymbol =>
+      case m: MethodSymbol if !m.isParamWithDefault =>
         val methodName = m.fullName
         val operationType = m.annotations.collectFirst {
           case opAnnotation if opAnnotation.tree.tpe <:< weakTypeOf[command] =>
@@ -39,9 +39,9 @@ object MetaDataMacro extends MetaDataMacro {
             q"_root_.wiro.OperationType.Query($name)"
         }
 
-        q"($methodName -> $operationType.map { o => _root_.wiro.MethodMetaData(o) })"
+        q"($methodName -> $operationType.map(_root_.wiro.MethodMetaData(_)))"
     }
 
-    q"Map(..$decls) collect { case (k, Some(v)) => (k -> v) }"
+    q"_root_.scala.collection.immutable.Map(..$decls) collect { case (k, Some(v)) => (k -> v) }"
   }
 }
