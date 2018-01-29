@@ -2,7 +2,6 @@
 *.log
 
 # sbt specific
-build.properties
 .cache
 .history
 .lib/
