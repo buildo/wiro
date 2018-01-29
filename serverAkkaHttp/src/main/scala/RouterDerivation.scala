@@ -16,21 +16,22 @@ trait RouterDerivationModule extends PathMacro with MetaDataMacro with TypePathM
 
 object RouterDerivationMacro extends RouterDerivationModule {
   //val is required to make universe public
-  class MacroHelper[U <: Universe](val universe: U) {
-    import universe._
-
+  object MacroHelper {
     //check only annotations of path type
     //Since universe is public Tree type can be returned
-    def derivePath(tpe: Type): Tree = tpe.typeSymbol.annotations.collectFirst {
-      case pathAnnotation if pathAnnotation.tree.tpe <:< weakTypeOf[path] =>
-        q"override val path = derivePath[$tpe]"
-    }.getOrElse(EmptyTree)
+    def derivePath[U <: Universe](universe: U)(tpe: universe.Type): universe.Tree = {
+      import universe._
+      tpe.typeSymbol.annotations.collectFirst {
+        case pathAnnotation if pathAnnotation.tree.tpe <:< weakTypeOf[path] =>
+          q"override val path = derivePath[$tpe]"
+      }.getOrElse(EmptyTree)
+    }
   }
 
   def deriveRouterImpl[A: c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Tree = {
     import c.universe._
     val tpe = weakTypeOf[A]
-    val derivePath = new MacroHelper[c.universe.type](c.universe).derivePath(tpe)
+    val derivePath = MacroHelper.derivePath(c.universe)(tpe)
 
     q"""
     import wiro.{ OperationType, MethodMetaData }
@@ -47,7 +48,7 @@ object RouterDerivationMacro extends RouterDerivationModule {
   def deriveRouterImplPrinter[A: c.WeakTypeTag](c: Context)(a: c.Expr[A], printer: c.Expr[Printer]): c.Tree = {
     import c.universe._
     val tpe = weakTypeOf[A]
-    val derivePath = new MacroHelper[c.universe.type](c.universe).derivePath(tpe)
+    val derivePath = MacroHelper.derivePath(c.universe)(tpe)
 
     q"""
     import wiro.{ OperationType, MethodMetaData }
