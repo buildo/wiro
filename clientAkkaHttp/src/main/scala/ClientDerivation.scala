@@ -14,9 +14,7 @@ object ClientDerivationMacro extends ClientDerivationModule {
     val tpe = weakTypeOf[A]
 
     q"""
-    import wiro.{ OperationType, MethodMetaData }
-
-    new RPCClientContext[$tpe] {
+    new _root_.wiro.client.akkaHttp.RPCClientContext[$tpe] {
       override val methodsMetaData = deriveMetaData[$tpe]
       override val tp = typePath[$tpe]
       override val path = derivePath[$tpe]

@@ -15,30 +15,31 @@ object OperationType {
 }
 
 case class MethodMetaData(
-  operationType: OperationType
+    operationType: OperationType
 )
 
 trait MetaDataMacro {
-  def deriveMetaData[A]: Map[String, MethodMetaData] = macro MetaDataMacro.deriveMetaDataImpl[A]
+  def deriveMetaData[A]: Map[String, MethodMetaData] =
+    macro MetaDataMacro.deriveMetaDataImpl[A]
 }
 
 object MetaDataMacro extends MetaDataMacro {
   def deriveMetaDataImpl[A: c.WeakTypeTag](c: Context): c.Tree = {
     import c.universe._
 
-    val decls =  weakTypeOf[A].decls.collect {
+    val decls = weakTypeOf[A].decls.collect {
       case m: MethodSymbol =>
         val methodName = m.fullName
         val operationType = m.annotations.collectFirst {
           case opAnnotation if opAnnotation.tree.tpe <:< weakTypeOf[command] =>
             val name = opAnnotation.tree.children.tail.head
-            q"OperationType.Command($name)"
+            q"_root_.wiro.OperationType.Command($name)"
           case opAnnotation if opAnnotation.tree.tpe <:< weakTypeOf[query] =>
             val name = opAnnotation.tree.children.tail.head
-            q"OperationType.Query($name)"
+            q"_root_.wiro.OperationType.Query($name)"
         }
 
-        q"($methodName -> $operationType.map { o => MethodMetaData(o) })"
+        q"($methodName -> $operationType.map { o => _root_.wiro.MethodMetaData(o) })"
     }
 
     q"Map(..$decls) collect { case (k, Some(v)) => (k -> v) }"
