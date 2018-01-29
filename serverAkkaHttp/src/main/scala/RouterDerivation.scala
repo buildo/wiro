@@ -28,7 +28,7 @@ object RouterDerivationMacro extends RouterDerivationModule {
     }
   }
 
-  def deriveRouterImpl[A: c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Tree = {
+  def deriveRouterImpl[A: c.WeakTypeTag](c: Context)(a: c.Tree): c.Tree = {
     import c.universe._
     val tpe = weakTypeOf[A]
     val derivePath = MacroHelper.derivePath(c.universe)(tpe)
@@ -45,7 +45,7 @@ object RouterDerivationMacro extends RouterDerivationModule {
     """
   }
 
-  def deriveRouterImplPrinter[A: c.WeakTypeTag](c: Context)(a: c.Expr[A], printer: c.Expr[Printer]): c.Tree = {
+  def deriveRouterImplPrinter[A: c.WeakTypeTag](c: Context)(a: c.Tree, printer: c.Tree): c.Tree = {
     import c.universe._
     val tpe = weakTypeOf[A]
     val derivePath = MacroHelper.derivePath(c.universe)(tpe)
