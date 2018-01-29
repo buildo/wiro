@@ -34,8 +34,6 @@ object RouterDerivationMacro extends RouterDerivationModule {
     val derivePath = MacroHelper.derivePath(c.universe)(tpe)
 
     q"""
-    import wiro.{ OperationType, MethodMetaData }
-
     new _root_.wiro.server.akkaHttp.Router {
       override val routes = route[$tpe]($a)
       override val methodsMetaData = deriveMetaData[$tpe]
@@ -51,8 +49,6 @@ object RouterDerivationMacro extends RouterDerivationModule {
     val derivePath = MacroHelper.derivePath(c.universe)(tpe)
 
     q"""
-    import wiro.{ OperationType, MethodMetaData }
-
     new _root_.wiro.server.akkaHttp.Router {
       override val routes = route[$tpe]($a)
       override val methodsMetaData = deriveMetaData[$tpe]
