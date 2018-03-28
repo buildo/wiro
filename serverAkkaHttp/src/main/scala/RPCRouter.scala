@@ -12,7 +12,7 @@ import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
 import FailSupport._
 
-import io.circe.{ Json, JsonObject, Printer }
+import io.circe.{ Json, JsonObject, Printer, ParsingFailure }
 import io.circe.parser._
 
 import com.typesafe.scalalogging.LazyLogging
@@ -69,7 +69,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
   //Generates GET requests
   private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route =
     (routePathPrefix(operationFullName, methodMetaData) & pathEnd & get & parameterMap) { params =>
-      val args = params.mapValues(parseJsonOrString)
+      val args = params.mapValues(parseJsonObjectOrString)
       autowireRequestRouteWithToken(operationFullName, args)
     }
 
@@ -79,8 +79,14 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
       request => autowireRequestRouteWithToken(operationFullName, request.toMap)
     }
 
-  private[this] def parseJsonOrString(s: String): Json =
-    parse(s).getOrElse(Json.fromString(s))
+  private[this] def parseJsonObject(s: String): Either[ParsingFailure, Json] =
+    parse(s).filterOrElse(
+      p = (json: Json) => json.isObject,
+      zero = ParsingFailure("The parsed Json is not an object", new Exception())
+    )
+
+  private[this] def parseJsonObjectOrString(s: String): Json =
+    parseJsonObject(s).getOrElse(Json.fromString(s))
 
   private[this] def tokenAsArg(token: String): (String, Json) =
     "token" -> Json.obj("token" -> Json.fromString(token))
