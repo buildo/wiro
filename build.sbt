@@ -39,7 +39,7 @@ lazy val commonSettings = Seq(
   bintrayOrganization := Some("buildo"),
   organization := "io.buildo",
   licenses += ("MIT", url("https://github.com/buildo/wiro/blob/master/LICENSE")),
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.12.4",
   crossScalaVersions := Seq("2.11.8", "2.12.1"),
   libraryDependencies :=
     commonDependencies :+
