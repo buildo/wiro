@@ -79,11 +79,10 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
       request => autowireRequestRouteWithToken(operationFullName, request.toMap)
     }
 
-  private[this] def parseJsonObject(s: String): Either[ParsingFailure, Json] =
-    parse(s).filterOrElse(
-      p = (json: Json) => json.isObject,
-      zero = ParsingFailure("The parsed Json is not an object", new Exception())
-    )
+  private[this] def parseJsonObject(s: String): Either[ParsingFailure, Json] = {
+    val failure = ParsingFailure("The parsed Json is not an object", new Exception())
+    parse(s).ensure(failure)(_.isObject)
+  }
 
   private[this] def parseJsonObjectOrString(s: String): Json =
     parseJsonObject(s).getOrElse(Json.fromString(s))
