@@ -8,6 +8,7 @@ val akkaHttpTestKitBase = "com.typesafe.akka" %% "akka-http-testkit" % "10.0.3"
 val scalaTestBase = "org.scalatest" %% "scalatest" % "3.0.1"
 val akkaHttpTestKit = akkaHttpTestKitBase % "test"
 val scalaTest = scalaTestBase % "test"
+val cats = "org.typelevel" %% "cats-core" % "1.1.0"
 
 val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.9.0"
 
@@ -32,7 +33,8 @@ val commonDependencies = Seq(
   akkaHttpCirce,
   akkaHttpTestKit,
   scalaTest,
-  pureConfig
+  pureConfig,
+  cats
 ) ++ circeDependencies ++ loggingBackendDependencies
 
 lazy val commonSettings = Seq(
