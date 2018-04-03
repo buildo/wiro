@@ -15,10 +15,15 @@ import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import io.circe.generic.auto._
 
 import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.time.{ Millis, Seconds, Span }
+import org.scalatest.concurrent.ScalaFutures
 
 import wiro.TestController._
 
-class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest {
+class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest with ScalaFutures {
+
+  implicit val defaultPatience =
+    PatienceConfig(timeout = Span(2, Seconds), interval = Span(50, Millis))
 
   private[this] def jsonEntity(data: ByteString) = HttpEntity(
     contentType = MediaTypes.`application/json`,
