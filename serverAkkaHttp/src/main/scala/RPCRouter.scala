@@ -81,7 +81,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
 
   private[this] def parseJsonObject(s: String): Either[ParsingFailure, Json] = {
     val failure = ParsingFailure("The parsed Json is not an object", new Exception())
-    parse(s).ensureOr(_ => failure)((json: Json) => json.isObject)
+    parse(s).ensure(failure)(_.isObject)
   }
 
   private[this] def parseJsonObjectOrString(s: String): Json =
