@@ -63,6 +63,9 @@ object TestController extends RouterDerivationModule {
     def read(id: Int): Future[Either[UserNotFound, User]]
 
     @query
+    def readString(id: String): Future[Either[UserNotFound, User]]
+
+    @query
     def readQuery(id: Int): Future[Either[UserNotFound, User]]
 
     @command(name = Some("insert"))
@@ -95,9 +98,15 @@ object TestController extends RouterDerivationModule {
       else Left(UserNotFound(id))
     }
 
-    def readQuery(idP: Int): Future[Either[UserNotFound, User]] = Future {
-      if (idP == 1) Right(User(idP, "readQuery"))
-      else Left(UserNotFound(idP))
+
+
+
+    def readString(id: String): Future[Either[UserNotFound, User]] =
+      Future(Right(User(1, "read")))
+
+    def readQuery(id: Int): Future[Either[UserNotFound, User]] = Future {
+      if (id == 1) Right(User(id, "readQuery"))
+      else Left(UserNotFound(id))
     }
 
     def insertUser(id: Int, user: User): Future[Either[Conflict, Ok]] = Future {

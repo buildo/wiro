@@ -16,7 +16,7 @@ object PathMacro extends PathMacro {
     val tpe = weakTypeOf[A].typeSymbol
 
     tpe.annotations.collectFirst {
-      case pathAnnotation if pathAnnotation.tree.tpe <:< c.weakTypeOf[path] =>
+      case pathAnnotation if pathAnnotation.tree.tpe <:< weakTypeOf[path] =>
         pathAnnotation.tree.children.tail.head
     }.getOrElse {
       c.abort(c.enclosingPosition, s"\n\nMissing annotation @path(<name>) on $tpe\n")

@@ -11,12 +11,14 @@ import scala.concurrent.Future
 
 import wiro.{ Config, Auth }
 import wiro.server.akkaHttp._
+import wiro.server.akkaHttp.{ FailSupport => ServerFailSupport }
 import wiro.client.akkaHttp._
+import wiro.client.akkaHttp.{ FailSupport => ClientFailSupport }
 
 object controllers {
   import models._
   import wiro.annotation._
-  import FailSupport._
+  import ServerFailSupport._
 
   case class Nope(msg: String)
   case class Wa(lol: String, bah: Int, dah: Int)
@@ -51,7 +53,7 @@ object controllers {
 }
 
 object errors {
-  import FailSupport._
+  import ServerFailSupport._
   import controllers.Nope
 
   import io.circe.syntax._
@@ -66,6 +68,7 @@ object errors {
 object Client extends App with ClientDerivationModule {
   import controllers._
   import autowire._
+  import ClientFailSupport._
 
   val config = Config("localhost", 8080)
 
@@ -84,7 +87,7 @@ object Server extends App with RouterDerivationModule {
   import controllers._
   import models._
   import errors._
-  import FailSupport._
+  import ServerFailSupport._
 
   val doghouseRouter = deriveRouter[DoghouseApi](new DoghouseApiImpl)
 

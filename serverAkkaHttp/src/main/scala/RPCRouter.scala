@@ -3,110 +3,90 @@ package server.akkaHttp
 
 import AutowireErrorSupport._
 
-import akka.http.scaladsl.model.{ HttpResponse, StatusCodes }
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{ Directive1, ExceptionHandler, Route }
+import akka.http.scaladsl.server.{ Directive0, Directive1, ExceptionHandler, Route, PathMatcher }
 
-import cats.syntax.traverse._
-import cats.instances.map._
-import cats.instances.either._
 import cats.syntax.either._
 
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
 import FailSupport._
 
-import io.circe.{ Json, ParsingFailure }
+import io.circe.{ Json, JsonObject, Printer, ParsingFailure }
 import io.circe.parser._
 
-import scala.language.implicitConversions
+import com.typesafe.scalalogging.LazyLogging
 
-import scala.util.{ Try, Success, Failure }
-import scala.concurrent.Future
-
-trait Router extends RPCServer with PathMacro with MetaDataMacro {
+trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLogging {
   def tp: Seq[String]
   def methodsMetaData: Map[String, MethodMetaData]
   def routes: autowire.Core.Router[Json]
   def path: String = tp.last
+  implicit def printer: Printer = Printer.noSpaces
 
   def buildRoute: Route = handleExceptions(exceptionHandler) {
     pathPrefix(path) {
-      methodsMetaData map {
+      methodsMetaData.map {
         case (k, v @ MethodMetaData(OperationType.Command(_))) => command(k, v)
         case (k, v @ MethodMetaData(OperationType.Query(_)))   => query(k, v)
-      } reduce (_ ~ _)
+      }.reduce(_ ~ _)
     }
   }
 
   def exceptionHandler = ExceptionHandler {
-    case f@FailException(_) => complete(f.response)
+    case e: FailException[_] =>
+      logger.error(e.getMessage, e)
+      complete(e.response)
   }
 
-  private[this] def requestToken: Directive1[Option[String]] = {
-    val authDirective: Directive1[Option[String]] = headerValueByName("Authorization")
-      .flatMap { header =>
-        val TokenPattern = "Token token=(.+)".r
-        header match {
-          case TokenPattern(token) => provide(Some(token))
-          case _                   => provide(None)
-        }
-      }
-    authDirective.recover { x => provide(None) }
+  private[this] val requestToken: Directive1[Option[String]] = {
+    val TokenPattern = "Token token=(.+)".r
+    optionalHeaderValueByName("Authorization").map {
+      case Some(TokenPattern(token)) => Some(token)
+      case _                         => None
+    }
   }
+
+  private[this] def operationPath(operationFullName: String): Array[String] =
+    operationFullName.split('.')
 
   private[this] def operationName(operationFullName: String, methodMetaData: MethodMetaData): String =
-    methodMetaData.operationType.name.getOrElse(operationFullName.split("""\.""").last)
+    methodMetaData.operationType.name.getOrElse(operationPath(operationFullName).last)
 
-  private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route = {
-    (pathPrefix(operationName(operationFullName, methodMetaData)) & pathEnd & get & parameterMap) { params =>
-      requestToken { token =>
-        val appliedRequest = Try(routes(autowire.Core.Request(
-          path = operationFullName.split("""\."""),
-          args = queryArgs(params, token)
-        )))
+  private[this] def autowireRequest(operationFullName: String, args: Map[String, Json]): autowire.Core.Request[Json] =
+    autowire.Core.Request(path = operationPath(operationFullName), args = args)
 
-        appliedRequest match {
-          case Success(res) => complete(res)
-          case Failure(f) => handleUnwrapErrors(f)
-        }
-      }
+  private[this] def autowireRequestRoute(operationFullName: String, args: Map[String, Json]): Route =
+    Either.catchNonFatal(routes(autowireRequest(operationFullName, args)))
+      .fold(handleUnwrapErrors, result => complete(result))
+
+  private[this] def autowireRequestRouteWithToken(operationFullName: String, args: Map[String, Json]): Route =
+    requestToken(token => autowireRequestRoute(operationFullName, args ++ token.map(tokenAsArg)))
+
+  private[this] def routePathPrefix(operationFullName: String, methodMetaData: MethodMetaData): Directive0 =
+    pathPrefix(operationName(operationFullName, methodMetaData))
+
+  //Generates GET requests
+  private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route =
+    (routePathPrefix(operationFullName, methodMetaData) & pathEnd & get & parameterMap) { params =>
+      val args = params.mapValues(parseJsonObjectOrString)
+      autowireRequestRouteWithToken(operationFullName, args)
     }
-  }
 
   //Generates POST requests
-  private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route = {
-    (pathPrefix(operationName(operationFullName, methodMetaData)) & pathEnd & post & entity(as[Json])) { request =>
-      requestToken { token =>
-        val appliedRequest = Try(routes(autowire.Core.Request(
-          path = operationFullName.split("""\."""),
-          args = commandArgs(request, token)
-        )))
-
-        appliedRequest match {
-          case Success(res) => complete(res)
-          case Failure(f) => handleUnwrapErrors(f)
-        }
-      }
+  private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route =
+    (routePathPrefix(operationFullName, methodMetaData) & pathEnd & post & entity(as[JsonObject])) {
+      request => autowireRequestRouteWithToken(operationFullName, request.toMap)
     }
+
+  private[this] def parseJsonObject(s: String): Either[ParsingFailure, Json] = {
+    val failure = ParsingFailure("The parsed Json is not an object", new Exception())
+    parse(s).ensure(failure)(_.isObject)
   }
 
-  def commandArgs(request: Json, token: Option[String]): Map[String, Json] =
-    request.as[Map[String, Json]].right.get.withToken(token)
+  private[this] def parseJsonObjectOrString(s: String): Json =
+    parseJsonObject(s).getOrElse(Json.fromString(s))
 
-  private[this] def parseJsonOrString(s: String): Json =
-    parse(s) match {
-      case Left(_) => Json.fromString(s)
-      case Right(other) => other
-    }
-
-  def queryArgs(params: Map[String, String], token: Option[String]): Map[String, Json] =
-    params.mapValues(parseJsonOrString).withToken(token)
-
-  implicit class PimpMyMap(m: Map[String, Json]) {
-    def withToken(token: Option[String]): Map[String, Json] = token match {
-      case Some(t) => m + ("token" -> Json.obj("token" -> Json.fromString(t)))
-      case None => m
-    }
-  }
+  private[this] def tokenAsArg(token: String): (String, Json) =
+    "token" -> Json.obj("token" -> Json.fromString(token))
 }

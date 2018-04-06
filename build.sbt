@@ -1,15 +1,20 @@
-import com.typesafe.sbt.SbtSite.SiteKeys._
-import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
-
 enablePlugins(GitVersioning)
+import microsites._
 
 val autowire = "com.lihaoyi" %% "autowire" % "0.2.6"
-val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.6"
-val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.16.0"
-val akkaHttpTestKit = "com.typesafe.akka" %% "akka-http-testkit" % "10.0.3" % "test"
-val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 
-val circeVersion = "0.8.0"
+val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.6"
+val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.19.0"
+val akkaHttpTestKitBase = "com.typesafe.akka" %% "akka-http-testkit" % "10.0.3"
+val scalaTestBase = "org.scalatest" %% "scalatest" % "3.0.1"
+val akkaHttpTestKit = akkaHttpTestKitBase % "test"
+val scalaTest = scalaTestBase % "test"
+val cats = "org.typelevel" %% "cats-core" % "1.1.0"
+
+val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.9.0"
+
+
+val circeVersion = "0.9.0"
 
 val circeDependencies = Seq(
   "io.circe" %% "circe-core",
@@ -17,31 +22,53 @@ val circeDependencies = Seq(
   "io.circe" %% "circe-parser"
 ).map(_ % circeVersion)
 
+val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2"
+
+val loggingBackendDependencies = Seq(
+  "ch.qos.logback" % "logback-classic" % "1.2.3" % "test"
+)
+
 val commonDependencies = Seq(
+  scalaLogging,
   autowire,
   akkaHttp,
   akkaHttpCirce,
   akkaHttpTestKit,
-  scalaTest
-) ++ circeDependencies
+  scalaTest,
+  pureConfig,
+  cats
+) ++ circeDependencies ++ loggingBackendDependencies
 
 lazy val commonSettings = Seq(
   bintrayOrganization := Some("buildo"),
   organization := "io.buildo",
   licenses += ("MIT", url("https://github.com/buildo/wiro/blob/master/LICENSE")),
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.11.12",
   crossScalaVersions := Seq("2.11.8", "2.12.1"),
   libraryDependencies :=
     commonDependencies :+
     scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided",
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
-  scalacOptions += "-Xplugin-require:macroparadise",
+  scalacOptions ++= Seq(
+    "-Xplugin-require:macroparadise",
+    "-encoding", "utf8",
+    "-deprecation", "-feature", "-unchecked", "-Xlint",
+    "-language:higherKinds",
+    "-language:implicitConversions",
+    "-Xfuture",
+    "-Ywarn-dead-code",
+    "-Ywarn-numeric-widen",
+    "-Ywarn-value-discard",
+    "-Ywarn-unused",
+    "-Ywarn-unused-import",
+    "-Yrangepos"
+  ),
   releaseCrossBuild := true
 )
 
 lazy val noPublishSettings = Seq(
-  publish := (),
-  publishLocal := (),
+  publish := {},
+  publishLocal := {},
   publishArtifact := false
 )
 
@@ -73,6 +100,7 @@ lazy val clientAkkaHttp = project
     bintrayPackageLabels := Seq("buildo", "wiro", "wiro-http-client")
   )
   .dependsOn(core)
+  .dependsOn(serverAkkaHttp % "test->test")
 
 lazy val examples = project
   .settings(commonSettings: _*)
@@ -82,10 +110,9 @@ lazy val examples = project
 lazy val docs = project
   .enablePlugins(MicrositesPlugin)
   .settings(moduleName := "wiro-docs")
-  .settings(ghpages.settings)
   .settings(docSettings)
-  .settings(tutScalacOptions ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
-  .settings(libraryDependencies ++= Seq(scalaTest, akkaHttpTestKit, akkaHttpCirce))
+  .settings(scalacOptions in Tut ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
+  .settings(libraryDependencies ++= Seq(scalaTestBase, akkaHttpTestKitBase, akkaHttpCirce))
   .dependsOn(serverAkkaHttp, examples)
 
 lazy val docSettings = Seq(

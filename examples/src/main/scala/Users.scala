@@ -9,8 +9,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import wiro.Config
 import wiro.server.akkaHttp._
+import wiro.server.akkaHttp.{ FailSupport => ServerFailSupport }
 import wiro.client.akkaHttp._
-
+import wiro.client.akkaHttp.{ FailSupport => ClientFailSupport }
 
 // Models definition
 object models {
@@ -90,7 +91,7 @@ object UsersServer extends App with RouterDerivationModule {
   import controllers._
   import models._
   import errors._
-  import FailSupport._
+  import ServerFailSupport._
 
   val usersRouter = deriveRouter[UsersApi](new UsersApiImpl)
 
@@ -106,6 +107,7 @@ object UsersServer extends App with RouterDerivationModule {
 object UsersClient extends App with ClientDerivationModule {
   import controllers._
   import autowire._
+  import ClientFailSupport._
 
   val config = Config("localhost", 8080)
 
