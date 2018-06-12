@@ -35,7 +35,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
 
   def exceptionHandler = ExceptionHandler {
     case e: FailException[_] =>
-      logger.error(e.getMessage, e)
+      logger.error(s"encoding error: ${e.getMessage}")
       complete(e.response)
   }
 
