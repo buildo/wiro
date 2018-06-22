@@ -1,3 +1,4 @@
+
 package wiro
 
 import akka.http.scaladsl.model._
@@ -221,7 +222,7 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest with Scala
     }
 
     "has headers" should {
-      "allow the user to readm them" in {
+      "allow the user to read them" in {
         val headerName = "header"
         val headerContent = "content"
         Get("/user/inLoveWithMyHeaders") ~> addHeader(headerName, headerContent) ~> userRouter.buildRoute ~> check {
