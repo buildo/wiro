@@ -23,15 +23,16 @@ class RequestBuilder(
       .getOrElse(path.lastOption.getOrElse(throw new Exception("Couldn't find appropriate method path")))
 
     val (tokenArgs, nonTokenArgs) = splitTokenArgs(args)
+    val (headersArgs, remainingArgs) = splitHeaderArgs(nonTokenArgs)
     val tokenHeader = handleAuth(tokenArgs.values.toList)
+    val headers = handleHeaders(headersArgs.values.toList) ++ tokenHeader
     val uri = buildUri(operationName)
-
     val httpRequest = methodMetaData.operationType match {
-      case _: OperationType.Command => commandHttpRequest(nonTokenArgs, uri)
-      case _: OperationType.Query => queryHttpRequest(nonTokenArgs, uri)
+      case _: OperationType.Command => commandHttpRequest(remainingArgs, uri)
+      case _: OperationType.Query => queryHttpRequest(remainingArgs, uri)
     }
 
-    httpRequest.withHeaders(tokenHeader)
+    httpRequest.withHeaders(headers)
   }
 
   private[this] def buildUri(operationName: String) = Uri(
@@ -42,11 +43,25 @@ class RequestBuilder(
   private[this] def splitTokenArgs(args: Map[String, Json]): (Map[String, Json], Map[String, Json]) =
     args.partition { case (_, value) => value.as[wiro.Auth].isRight }
 
+  private[this] def splitHeaderArgs(args: Map[String, Json]): (Map[String, Json], Map[String, Json]) =
+    args.partition { case (_, value) => value.as[wiro.OperationParameters].isRight }
+
   private[this] def handleAuth(tokenCandidates: List[Json]): List[RawHeader] =
     if (tokenCandidates.length > 1)
       throw new Exception("Only one parameter of wiro.Auth type should be provided")
     else tokenCandidates.map(_.as[wiro.Auth]).collect {
       case Right(wiro.Auth(token)) => RawHeader("Authorization", s"Token token=$token")
+    }
+
+  private[this] def handleHeaders(headersCandidates: List[Json]): List[RawHeader] =
+    headersCandidates.headOption match {
+      case Some(operationParameters) =>
+        operationParameters.as[wiro.OperationParameters] match {
+          case Right(wiro.OperationParameters(parameters)) =>
+            parameters.map { case (headerName, headerValue) => RawHeader(headerName, headerValue.noSpaces) }.toList
+          case Left(_) => Nil
+        }
+      case None => Nil
     }
 
   private[this] def commandHttpRequest(nonTokenArgs: Map[String, Json], uri: Uri) = HttpRequest(
