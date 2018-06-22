@@ -12,6 +12,7 @@ import akka.util.ByteString
 
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
+import io.circe.Json
 import io.circe.generic.auto._
 
 import org.scalatest.{ Matchers, WordSpec }
@@ -215,6 +216,18 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest with Scala
         Get("/user/nobodyCannaCrossIt") ~> addHeader("Authorization", "Token token=bus") ~> userRouter.buildRoute ~> check {
           status should be (OK)
           responseAs[Ok] should be (Ok("di bus can swim"))
+        }
+      }
+    }
+
+    "has headers" should {
+      "allow the user to readm them" in {
+        val headerName = "header"
+        val headerContent = "content"
+        Get("/user/inLoveWithMyHeaders") ~> addHeader(headerName, headerContent) ~> userRouter.buildRoute ~> check {
+          status should be (OK)
+          responseAs[OperationParameters].parameters should contain (headerName -> Json.fromString(headerContent))
+          responseAs[OperationParameters].parameters(headerName) should be (Json.fromString(headerContent))
         }
       }
     }

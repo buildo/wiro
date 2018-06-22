@@ -53,6 +53,9 @@ object TestController extends RouterDerivationModule {
     @query
     def nobodyCannaCrossIt(token: Auth): Future[Either[Unauthorized, Ok]]
 
+    @query
+    def inLoveWithMyHeaders(parameters: OperationParameters): Future[Either[GenericError, OperationParameters]]
+
     @command
     def update(id: Int, user: User): Future[Either[UserNotFound, Ok]]
 
@@ -112,6 +115,10 @@ object TestController extends RouterDerivationModule {
 
     def usersNumber(): Future[Either[GenericError, Int]] = Future {
       Right(1)
+    }
+
+    def inLoveWithMyHeaders(parameters: OperationParameters): Future[Either[GenericError, OperationParameters]] = Future {
+      Right(parameters)
     }
   }
 
