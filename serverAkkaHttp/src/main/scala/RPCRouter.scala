@@ -60,8 +60,8 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
     Either.catchNonFatal(routes(autowireRequest(operationFullName, args)))
       .fold(handleUnwrapErrors, result => complete(result))
 
-  private[this] def autowireRequestRouteWithToken(operationFullName: String, args: Map[String, Json]): Route =
-    requestToken(token => autowireRequestRoute(operationFullName, args ++ token.map(tokenAsArg)))
+  private[this] def autowireRequestRouteWithToken(operationFullName: String, args: Map[String, Json], headers: Map[String, Json]): Route =
+    requestToken(token => autowireRequestRoute(operationFullName, args ++ token.map(tokenAsArg) ++ Some(headersAsArg(headers))))
 
   private[this] def routePathPrefix(operationFullName: String, methodMetaData: MethodMetaData): Directive0 =
     pathPrefix(operationName(operationFullName, methodMetaData))
@@ -69,14 +69,19 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
   //Generates GET requests
   private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route =
     (routePathPrefix(operationFullName, methodMetaData) & pathEnd & get & parameterMap) { params =>
-      val args = params.mapValues(parseJsonObjectOrString)
-      autowireRequestRouteWithToken(operationFullName, args)
+      headersDirective { headers =>
+        val args = params.mapValues(parseJsonObjectOrString)
+        autowireRequestRouteWithToken(operationFullName, args, headers)
+      }
     }
+
+  private[this] def headersDirective: Directive1[Map[String, Json]] =
+    extract(_.request.headers).map(_.map(header => header.name -> Json.fromString(header.value)).toMap)
 
   //Generates POST requests
   private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route =
-    (routePathPrefix(operationFullName, methodMetaData) & pathEnd & post & entity(as[JsonObject])) {
-      request => autowireRequestRouteWithToken(operationFullName, request.toMap)
+    (routePathPrefix(operationFullName, methodMetaData) & pathEnd & post & entity(as[JsonObject])) { request =>
+      headersDirective { headers => autowireRequestRouteWithToken(operationFullName, request.toMap, headers) }
     }
 
   private[this] def parseJsonObject(s: String): Either[ParsingFailure, Json] = {
@@ -89,4 +94,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
 
   private[this] def tokenAsArg(token: String): (String, Json) =
     "token" -> Json.obj("token" -> Json.fromString(token))
+
+  private[this] def headersAsArg(headersMap: Map[String, Json]): (String, Json) =
+    "parameters" -> Json.obj("parameters" -> Json.fromFields(headersMap))
 }
