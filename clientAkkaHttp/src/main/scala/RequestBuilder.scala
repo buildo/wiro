@@ -60,10 +60,12 @@ class RequestBuilder(
   }
 
   private[this] def handleHeaders(headersCandidates: List[Json]): List[RawHeader] = {
-    val maybeParameters: Option[OperationParameters] = headersCandidates.headOption
-      .map(_.as[wiro.OperationParameters].toOption).flatten
-    val maybeHeaders: Option[List[RawHeader]] = maybeParameters.map(_.parameters.map(stringPairToHeader).toList)
-    maybeHeaders.getOrElse(Nil)
+    val headers: Option[List[RawHeader]] = for {
+      parameters: Option[OperationParameters] <- headersCandidates.headOption.map(_.as[wiro.OperationParameters].toOption)
+      headers: List[RawHeader] <- parameters.map(_.parameters.map(stringPairToHeader).toList)
+    } yield headers
+
+    headers.getOrElse(Nil)
   }
 
   private[this] def commandHttpRequest(nonTokenArgs: Map[String, Json], uri: Uri) = HttpRequest(
