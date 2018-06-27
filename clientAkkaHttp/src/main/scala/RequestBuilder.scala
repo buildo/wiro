@@ -61,8 +61,8 @@ class RequestBuilder(
 
   private[this] def handleHeaders(headersCandidates: List[Json]): List[RawHeader] = {
     val headers: Option[List[RawHeader]] = for {
-      parameters: Option[OperationParameters] <- headersCandidates.headOption.map(_.as[wiro.OperationParameters].toOption)
-      headers: List[RawHeader] <- parameters.map(_.parameters.map(stringPairToHeader).toList)
+      parameters: Decoder.Result[OperationParameters] <- headersCandidates.headOption.map(_.as[wiro.OperationParameters])
+      headers: List[RawHeader] <- parameters.toOption.map(_.parameters.map(stringPairToHeader).toList)
     } yield headers
 
     headers.getOrElse(Nil)
