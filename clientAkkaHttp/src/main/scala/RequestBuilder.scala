@@ -9,6 +9,8 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
 
+import cats.implicits._
+
 class RequestBuilder(
   config: Config,
   ctx: RPCClientContext[_]
@@ -53,16 +55,16 @@ class RequestBuilder(
       case Right(wiro.Auth(token)) => RawHeader("Authorization", s"Token token=$token")
     }
 
-  private[this] def handleHeaders(headersCandidates: List[Json]): List[RawHeader] =
-    headersCandidates.headOption match {
-      case Some(operationParameters) =>
-        operationParameters.as[wiro.OperationParameters] match {
-          case Right(wiro.OperationParameters(parameters)) =>
-            parameters.map { case (headerName, headerValue) => RawHeader(headerName, headerValue) }.toList
-          case Left(_) => Nil
-        }
-      case None => Nil
-    }
+  private[this] val stringPairToHeader: PartialFunction[(String, String), RawHeader] = {
+    case (headerName: String, headerValue: String) => RawHeader(headerName, headerValue)
+  }
+
+  private[this] def handleHeaders(headersCandidates: List[Json]): List[RawHeader] = {
+    val maybeParameters: Option[OperationParameters] = headersCandidates.headOption
+      .map(_.as[wiro.OperationParameters].toOption).flatten
+    val maybeHeaders: Option[List[RawHeader]] = maybeParameters.map(_.parameters.map(stringPairToHeader).toList)
+    maybeHeaders.getOrElse(Nil)
+  }
 
   private[this] def commandHttpRequest(nonTokenArgs: Map[String, Json], uri: Uri) = HttpRequest(
     method = HttpMethods.POST, uri = uri, entity = HttpEntity(
