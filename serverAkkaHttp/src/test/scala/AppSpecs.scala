@@ -227,8 +227,8 @@ class WiroSpec extends WordSpec with Matchers with ScalatestRouteTest with Scala
         val headerContent = "content"
         Get("/user/inLoveWithMyHeaders") ~> addHeader(headerName, headerContent) ~> userRouter.buildRoute ~> check {
           status should be (OK)
-          responseAs[OperationParameters].parameters should contain (headerName -> Json.fromString(headerContent))
-          responseAs[OperationParameters].parameters(headerName) should be (Json.fromString(headerContent))
+          responseAs[OperationParameters].parameters should contain (headerName -> headerContent)
+          responseAs[OperationParameters].parameters(headerName) should be (headerContent)
         }
       }
     }

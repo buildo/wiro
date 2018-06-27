@@ -58,7 +58,7 @@ class RequestBuilder(
       case Some(operationParameters) =>
         operationParameters.as[wiro.OperationParameters] match {
           case Right(wiro.OperationParameters(parameters)) =>
-            parameters.map { case (headerName, headerValue) => RawHeader(headerName, headerValue.noSpaces) }.toList
+            parameters.map { case (headerName, headerValue) => RawHeader(headerName, headerValue) }.toList
           case Left(_) => Nil
         }
       case None => Nil

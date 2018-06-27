@@ -21,5 +21,5 @@ case class Auth(
 )
 
 case class OperationParameters(
-  parameters: Map[String, Json]
+  parameters: Map[String, String]
 )
