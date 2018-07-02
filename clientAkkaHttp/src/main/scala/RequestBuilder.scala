@@ -9,7 +9,7 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
 
-import cats.implicits._
+import cats.syntax.either._
 
 class RequestBuilder(
   config: Config,
