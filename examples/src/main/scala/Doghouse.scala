@@ -4,12 +4,13 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.model.{ HttpResponse, StatusCodes, ContentType, HttpEntity, MediaTypes }
 
+import io.circe.Json
 import io.circe.generic.auto._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import wiro.{ Config, Auth }
+import wiro.{ Config, Auth, OperationParameters }
 import wiro.server.akkaHttp._
 import wiro.server.akkaHttp.{ FailSupport => ServerFailSupport }
 import wiro.client.akkaHttp._
@@ -28,10 +29,11 @@ object controllers {
     @query(name = Some("puppy"))
     def getPuppy(
       token: Auth,
-      wa: Int
+      wa: Int,
+      parameters: OperationParameters
     ): Future[Either[Nope, Dog]]
 
-    @command(name = Some("pallino"))
+    @query(name = Some("pallino"))
     def getPallino(
       something: String
     ): Future[Either[Nope, Dog]]
@@ -40,11 +42,14 @@ object controllers {
   class DoghouseApiImpl() extends DoghouseApi {
     override def getPallino(
       something: String
-    ): Future[Either[Nope, Dog]] = Future(Right(Dog("pallino")))
+    ): Future[Either[Nope, Dog]] = Future {
+      Right(Dog("pallino"))
+    }
 
     override def getPuppy(
       token: Auth,
-      wa: Int
+      wa: Int,
+      parameters: OperationParameters
     ): Future[Either[Nope, Dog]] = Future {
       if (token == Auth("tokenone")) Right(Dog("pallino"))
       else Left(Nope("nope"))
@@ -78,9 +83,9 @@ object Client extends App with ClientDerivationModule {
   val doghouseClient = deriveClientContext[DoghouseApi]
   val rpcClient = new RPCClient(config, doghouseClient)
 
-  val res = rpcClient[DoghouseApi].getPuppy(Auth("tokenone"), 1).call()
+  val res = rpcClient[DoghouseApi].getPuppy(Auth("tokenone"), 1, OperationParameters(parameters = Map())).call()
 
-  res map (println(_))
+  res map (println(_)) recover { case e: Exception => e.printStackTrace }
 }
 
 object Server extends App with RouterDerivationModule {

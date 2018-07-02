@@ -19,3 +19,7 @@ case class RpcRequest(
 case class Auth(
   token: String
 )
+
+case class OperationParameters(
+  parameters: Map[String, String]
+)
