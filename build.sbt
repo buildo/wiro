@@ -2,8 +2,10 @@ enablePlugins(GitVersioning)
 import microsites._
 
 val autowire = "com.lihaoyi" %% "autowire" % "0.2.6"
-val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.3"
-val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.19.0"
+val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.1.3"
+val akkaActor = "com.typesafe.akka" %% "akka-actor" % "2.5.14"
+val akkaStreams = "com.typesafe.akka" %% "akka-stream" % "2.5.14"
+val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.21.0"
 val akkaHttpTestKitBase = "com.typesafe.akka" %% "akka-http-testkit" % "10.0.3"
 val scalaTestBase = "org.scalatest" %% "scalatest" % "3.0.1"
 val akkaHttpTestKit = akkaHttpTestKitBase % "test"
@@ -30,6 +32,8 @@ val commonDependencies = Seq(
   scalaLogging,
   autowire,
   akkaHttp,
+  akkaActor,
+  akkaStreams,
   akkaHttpCirce,
   akkaHttpTestKit,
   scalaTest,
