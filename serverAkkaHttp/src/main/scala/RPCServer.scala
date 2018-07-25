@@ -49,7 +49,13 @@ class HttpRPCServerActor(
     case Status.Failure(cause) => logger.error("Unable to bind to ${config.host}:${config.port}", cause)
   }
 
-  Http()
-    .bindAndHandle(route, config.host, config.port)
-    .pipeTo(self)
+  val bindingFuture = Http()
+        .bindAndHandle(route, config.host, config.port)
+        .pipeTo(self)
+
+  scala.sys.addShutdownHook({
+      logger.info("Wiro unbinding on exit")
+      bindingFuture
+        .flatMap(_.unbind())
+    })
 }
