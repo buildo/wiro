@@ -101,6 +101,9 @@ object TestController extends RouterDerivationModule {
       else Left(UserNotFound(id))
     }
 
+
+
+
     def readString(id: String): Future[Either[UserNotFound, User]] =
       Future(Right(User(1, "read")))
 

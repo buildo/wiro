@@ -2,7 +2,8 @@ enablePlugins(GitVersioning)
 import microsites._
 
 val autowire = "com.lihaoyi" %% "autowire" % "0.2.6"
-val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.3"
+
+val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.6"
 val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.19.0"
 val akkaHttpTestKitBase = "com.typesafe.akka" %% "akka-http-testkit" % "10.0.3"
 val scalaTestBase = "org.scalatest" %% "scalatest" % "3.0.1"
@@ -11,6 +12,7 @@ val scalaTest = scalaTestBase % "test"
 val cats = "org.typelevel" %% "cats-core" % "1.1.0"
 
 val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.9.0"
+
 
 val circeVersion = "0.9.0"
 
