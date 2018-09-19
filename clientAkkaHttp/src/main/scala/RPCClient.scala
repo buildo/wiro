@@ -25,13 +25,14 @@ trait RPCClientContext[T] extends MetaDataMacro with PathMacro {
 class RPCClient(
   config: Config,
   prefix: Option[String] = None,
+  scheme: String = "http",
   ctx: RPCClientContext[_]
 )(implicit
   system: ActorSystem,
   materializer: ActorMaterializer,
   executionContext: ExecutionContext
 ) extends autowire.Client[Json, WiroDecoder, Encoder] {
-  private[wiro] val requestBuilder = new RequestBuilder(config, prefix, ctx)
+  private[wiro] val requestBuilder = new RequestBuilder(config, prefix, scheme, ctx)
 
   def write[Result: Encoder](r: Result): Json = r.asJson
 

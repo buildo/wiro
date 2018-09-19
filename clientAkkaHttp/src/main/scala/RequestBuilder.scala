@@ -14,6 +14,7 @@ import cats.syntax.either._
 class RequestBuilder(
   config: Config,
   prefix: Option[String],
+  scheme: String,
   ctx: RPCClientContext[_]
 ) {
   def build(path : Seq[String], args: Map[String, Json]): HttpRequest = {
@@ -29,7 +30,7 @@ class RequestBuilder(
     val (headersArgs, remainingArgs) = splitHeaderArgs(nonTokenArgs)
     val tokenHeader = handleAuth(tokenArgs.values.toList)
     val headers = handleHeaders(headersArgs.values.toList) ++ tokenHeader
-    val uri = buildUri(operationName, prefix)
+    val uri = buildUri(operationName)
     val httpRequest = methodMetaData.operationType match {
       case _: OperationType.Command => commandHttpRequest(remainingArgs, uri)
       case _: OperationType.Query => queryHttpRequest(remainingArgs, uri)
@@ -38,14 +39,14 @@ class RequestBuilder(
     httpRequest.withHeaders(headers)
   }
 
-  private[this] def buildUri(operationName: String, prefix: Option[String]) = {
+  private[this] def buildUri(operationName: String) = {
     val path = prefix match {
       case None => Path / ctx.path / operationName
       case Some(prefix) => Path / prefix /ctx.path / operationName
     }
 
     Uri(
-      scheme = "http",
+      scheme = scheme,
       path = path,
       authority = Authority(host = Host(config.host), port = config.port)
     )
