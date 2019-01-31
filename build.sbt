@@ -65,7 +65,8 @@ lazy val commonSettings = Seq(
     "-Ywarn-unused-import",
     "-Yrangepos"
   ),
-  releaseCrossBuild := true
+  releaseCrossBuild := true,
+  releaseIgnoreUntrackedFiles := true
 )
 
 lazy val noPublishSettings = Seq(
