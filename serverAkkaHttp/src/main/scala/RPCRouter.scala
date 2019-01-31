@@ -22,7 +22,7 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
   def methodsMetaData: Map[String, MethodMetaData]
   def routes: autowire.Core.Router[Json]
   def path: String = tp.last
-  implicit def printer: Printer = Printer.noSpaces
+  implicit def printer: Printer = Printer.noSpaces.copy(dropNullValues = true)
 
   def buildRoute: Route = handleExceptions(exceptionHandler) {
     pathPrefix(path) {
