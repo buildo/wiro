@@ -12,7 +12,7 @@ val akkaHttpTestKit = akkaHttpTestKitBase % "test"
 val scalaTest = scalaTestBase % "test"
 val cats = "org.typelevel" %% "cats-core" % "1.1.0"
 
-val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.9.0"
+val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.10.1"
 
 val circeVersion = "0.9.0"
 
