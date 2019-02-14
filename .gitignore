@@ -2,7 +2,8 @@
 *.log
 
 # sbt specific
-build.properties
+metals*
+.bloop
 .cache
 .history
 .lib/
