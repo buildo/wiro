@@ -2,7 +2,7 @@
 *.log
 
 # sbt specific
-metals*
+.metals
 .bloop
 .cache
 .history
