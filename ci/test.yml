@@ -1,0 +1,17 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: hseeberger/scala-sbt
+
+inputs:
+  - name: wiro
+
+caches:
+  - path: .sbt
+  - path: .ivy2
+
+run:
+  path: ci/test.sh
+  dir: wiro
