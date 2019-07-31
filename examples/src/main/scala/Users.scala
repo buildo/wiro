@@ -114,7 +114,7 @@ object UsersClient extends App with ClientDerivationModule {
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
 
-  val rpcClient = new RPCClient(config, deriveClientContext[UsersApi])
+  val rpcClient = new RPCClient(config, ctx = deriveClientContext[UsersApi])
 
   rpcClient[UsersApi].insertUser(0, "Pippo").call() map (println(_))
 }

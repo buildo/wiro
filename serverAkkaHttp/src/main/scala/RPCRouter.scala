@@ -4,7 +4,8 @@ package server.akkaHttp
 import AutowireErrorSupport._
 
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{ Directive0, Directive1, ExceptionHandler, Route, PathMatcher }
+import akka.http.scaladsl.server.{ Directive0, Directive1, ExceptionHandler, Route }
+import akka.http.scaladsl.model.HttpEntity
 
 import cats.syntax.either._
 
@@ -35,7 +36,11 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
 
   def exceptionHandler = ExceptionHandler {
     case e: FailException[_] =>
-      logger.error(s"encoding error: ${e.getMessage}")
+      //logging left
+      e.response.entity match {
+        case HttpEntity.Strict(_, data) => logger.error(s"${e.response.status.value} ${data.utf8String}")
+        case complexEntity => logger.error(s"${e.response.status} ${e.response.entity}")
+      }
       complete(e.response)
   }
 
