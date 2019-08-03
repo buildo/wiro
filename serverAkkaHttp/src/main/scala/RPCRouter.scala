@@ -71,12 +71,16 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
   private[this] def routePathPrefix(operationFullName: String, methodMetaData: MethodMetaData): Directive0 =
     pathPrefix(operationName(operationFullName, methodMetaData))
 
+  private[this] def loggingClientIP: Directive0 = extractClientIP.map { ip => logger.debug(s"client ip: ${ip}") }
+
   //Generates GET requests
   private[this] def query(operationFullName: String, methodMetaData: MethodMetaData): Route =
-    (routePathPrefix(operationFullName, methodMetaData) & pathEnd & get & parameterMap) { params =>
-      headersDirective { headers =>
-        val args = params.mapValues(parseJsonObjectOrString)
-        autowireRequestRouteWithToken(operationFullName, args, headers)
+    loggingClientIP {
+      (routePathPrefix(operationFullName, methodMetaData) & pathEnd & get & parameterMap) { params =>
+        headersDirective { headers =>
+          val args = params.mapValues(parseJsonObjectOrString)
+          autowireRequestRouteWithToken(operationFullName, args, headers)
+        }
       }
     }
 
@@ -85,8 +89,10 @@ trait Router extends RPCServer with PathMacro with MetaDataMacro with LazyLoggin
 
   //Generates POST requests
   private[this] def command(operationFullName: String, methodMetaData: MethodMetaData): Route =
-    (routePathPrefix(operationFullName, methodMetaData) & pathEnd & post & entity(as[JsonObject])) { request =>
-      headersDirective { headers => autowireRequestRouteWithToken(operationFullName, request.toMap, headers) }
+    loggingClientIP {
+      (routePathPrefix(operationFullName, methodMetaData) & pathEnd & post & entity(as[JsonObject])) { request =>
+        headersDirective { headers => autowireRequestRouteWithToken(operationFullName, request.toMap, headers) }
+      }
     }
 
   private[this] def parseJsonObject(s: String): Either[ParsingFailure, Json] = {
