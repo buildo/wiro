@@ -81,7 +81,7 @@ object Client extends App with ClientDerivationModule {
   implicit val materializer = ActorMaterializer()
 
   val doghouseClient = deriveClientContext[DoghouseApi]
-  val rpcClient = new RPCClient(config, doghouseClient)
+  val rpcClient = new RPCClient(config, ctx = doghouseClient)
 
   val res = rpcClient[DoghouseApi].getPuppy(Auth("tokenone"), 1, OperationParameters(parameters = Map())).call()
 
