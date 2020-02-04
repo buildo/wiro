@@ -5,8 +5,9 @@ val autowire = "com.lihaoyi" %% "autowire" % "0.2.6"
 val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.1.11"
 val akkaActor = "com.typesafe.akka" %% "akka-actor" % "2.5.26"
 val akkaStreams = "com.typesafe.akka" %% "akka-stream" % "2.5.26"
-val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.21.0"
-val akkaHttpTestKitBase = "com.typesafe.akka" %% "akka-http-testkit" % "10.0.3"
+val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.30.0"
+val akkaHttpTestKitBase = "com.typesafe.akka" %% "akka-http-testkit" % "10.1.11"
+val akkaTestKit = "com.typesafe.akka" %% "akka-testkit" % "2.5.26" % "test"
 val scalaTestBase = "org.scalatest" %% "scalatest" % "3.0.1"
 val akkaHttpTestKit = akkaHttpTestKitBase % "test"
 val scalaTest = scalaTestBase % "test"
@@ -36,6 +37,7 @@ val commonDependencies = Seq(
   akkaStreams,
   akkaHttpCirce,
   akkaHttpTestKit,
+  akkaTestKit,
   scalaTest,
   pureConfig,
   cats
@@ -45,8 +47,8 @@ lazy val commonSettings = Seq(
   bintrayOrganization := Some("buildo"),
   organization := "io.buildo",
   licenses += ("MIT", url("https://github.com/buildo/wiro/blob/master/LICENSE")),
-  scalaVersion := "2.11.12",
-  crossScalaVersions := Seq("2.11.8", "2.12.1"),
+  scalaVersion := "2.12.2",
+  crossScalaVersions := Seq("2.12.2"),
   libraryDependencies :=
     commonDependencies :+
     scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided",
