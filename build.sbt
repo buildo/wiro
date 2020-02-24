@@ -2,11 +2,12 @@ enablePlugins(GitVersioning)
 import microsites._
 
 val autowire = "com.lihaoyi" %% "autowire" % "0.2.6"
-val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.1.3"
-val akkaActor = "com.typesafe.akka" %% "akka-actor" % "2.5.14"
-val akkaStreams = "com.typesafe.akka" %% "akka-stream" % "2.5.14"
-val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.21.0"
-val akkaHttpTestKitBase = "com.typesafe.akka" %% "akka-http-testkit" % "10.0.3"
+val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.1.11"
+val akkaActor = "com.typesafe.akka" %% "akka-actor" % "2.6.3"
+val akkaStreams = "com.typesafe.akka" %% "akka-stream" % "2.6.3"
+val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.30.0"
+val akkaHttpTestKitBase = "com.typesafe.akka" %% "akka-http-testkit" % "10.1.11"
+val akkaTestKit = "com.typesafe.akka" %% "akka-testkit" % "2.6.3" % "test"
 val scalaTestBase = "org.scalatest" %% "scalatest" % "3.0.1"
 val akkaHttpTestKit = akkaHttpTestKitBase % "test"
 val scalaTest = scalaTestBase % "test"
@@ -14,7 +15,7 @@ val cats = "org.typelevel" %% "cats-core" % "1.1.0"
 
 val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.10.1"
 
-val circeVersion = "0.9.0"
+val circeVersion = "0.12.2"
 
 val circeDependencies = Seq(
   "io.circe" %% "circe-core",
@@ -36,6 +37,7 @@ val commonDependencies = Seq(
   akkaStreams,
   akkaHttpCirce,
   akkaHttpTestKit,
+  akkaTestKit,
   scalaTest,
   pureConfig,
   cats
@@ -45,8 +47,8 @@ lazy val commonSettings = Seq(
   bintrayOrganization := Some("buildo"),
   organization := "io.buildo",
   licenses += ("MIT", url("https://github.com/buildo/wiro/blob/master/LICENSE")),
-  scalaVersion := "2.11.12",
-  crossScalaVersions := Seq("2.11.8", "2.12.1"),
+  scalaVersion := "2.12.2",
+  crossScalaVersions := Seq("2.12.2"),
   libraryDependencies :=
     commonDependencies :+
     scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided",
