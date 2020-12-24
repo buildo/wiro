@@ -50,8 +50,7 @@ inside the `controllers` object:
 val users = collection.mutable.Map.empty[Int, User] // Users DB
 
 // API implementation
-class UsersApiImpl() extends UsersApi {
-  import scala.concurrent.ExecutionContext.Implicits.global
+class UsersApiImpl(implicit ec: ExecutionContext) extends UsersApi {
 
   override def getUser(
     id: Int
